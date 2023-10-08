@@ -39,3 +39,10 @@ luac.out
 *.x86_64
 *.hex
 
+# Ignore all mods not explicitly mentioned
+*/
+mod_load_order.txt
+
+# Mods included in repo
+!CenterOutBuffs/
+!CenterOutBuffs/**
