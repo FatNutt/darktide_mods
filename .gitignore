@@ -44,5 +44,5 @@ luac.out
 mod_load_order.txt
 
 # Mods included in repo
-!CenterOutBuffs/
-!CenterOutBuffs/**
+!BetterBuffManagement/
+!BetterBuffManagement/**
