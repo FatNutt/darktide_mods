@@ -1,7 +1,7 @@
-local mod = get_mod("BetterBuffManagement")
+local mod = get_mod('BetterBuffManagement')
 
 return {
-	name = "BetterBuffManagement",
-	description = mod:localize("mod_description"),
-	is_togglable = true,
+    name = mod:localize('mod_name'),
+    description = mod:localize('mod_description'),
+    is_togglable = true,
 }
