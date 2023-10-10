@@ -16,3 +16,13 @@ function mod.find_table_by_key_value_pair(arrayTbls, matchKey, matchValue)
     end
     return nil
 end
+
+function mod.filter_array_by_key_value_pair(arrayTbls, matchKey, matchValue)
+    local filteredTbl = {}
+    for _, tblValue in ipairs(arrayTbls) do
+        if tblValue[matchKey] and tblValue[matchKey] == matchValue then
+            table.insert(filteredTbl, tblValue)
+        end
+    end
+    return filteredTbl
+end
