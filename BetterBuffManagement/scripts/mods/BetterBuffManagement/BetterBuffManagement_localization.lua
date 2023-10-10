@@ -23,7 +23,7 @@ return {
     toggle_hidden_buffs = {
         en = 'Toggle hidden buffs',
     },
-    num_buff_bars = {
-        en = 'Set number of buff bars'
+    reset_all_settings = {
+        en = 'Reset all settings'
     }
 }

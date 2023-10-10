@@ -29,13 +29,6 @@ return {
                 setting_id = 'toggle_hidden_buffs',
                 type = 'checkbox',
                 default_value = false
-            },
-            {
-                setting_id = 'num_buff_bars',
-                type = 'numeric',
-                default_value = 1,
-                range = { 1, 4 },
-                decimals_number = 0
             }
         }
     }
