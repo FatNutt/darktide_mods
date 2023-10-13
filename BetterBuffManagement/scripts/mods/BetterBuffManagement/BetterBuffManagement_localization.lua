@@ -27,10 +27,19 @@ return {
         en = 'Reset all settings'
     },
     create_grouping_button = {
-        en = '+'
+        en = 'Create grouping'
+    },
+    delete_grouping_button = {
+        en = 'Delete grouping'
     },
     remove_buff_from_grouping = {
         en = 'Remove'
+    },
+    grouping_name = {
+        en = 'Grouping name'
+    },
+    add_grouping = {
+        en = 'Add grouping'
     },
     unhide_all_icons = {
         en = 'Unhide all visible icons'
@@ -43,6 +52,12 @@ return {
     },
     select_all_icons = {
         en = 'Select all visible icons'
+    },
+    search = {
+        en = 'Search'
+    },
+    clear_search = {
+        en = 'Clear'
     },
     add_selected_buffs_group = {
         en = 'Add selected buffs to group'

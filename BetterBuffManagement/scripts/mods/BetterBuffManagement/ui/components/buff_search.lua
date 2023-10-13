@@ -1,5 +1,6 @@
 local mod = get_mod('BetterBuffManagement')
 mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/helpers/misc')
+mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/ui/helpers/combo')
 
 -- -------------------------------
 -- ---------- Constants ----------
@@ -7,12 +8,14 @@ mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/helpers/mi
 local GROUPINGS_SETTING_ID = 'bbm_groupings'
 local BUFF_BARS_SETTING_ID = 'bbm_buff_bars'
 
-local ADD_SELECTED_BUFFS_GROUP_LOC_ID = 'add_selected_buffs_group'
-local ADD_SELECTED_BUFFS_BAR_LOC_ID = 'add_selected_buffs_bar'
 local UNHIDE_VISIBLE_ICONS_LOC_ID = 'unhide_all_icons'
 local HIDE_VISIBLE_ICONS_LOC_ID = 'hide_all_icons'
 local DESELECT_VISIBLE_ICONS_LOC_ID = 'unselect_all_icons'
 local SELECT_VISIBLE_ICONS_LOC_ID = 'select_all_icons'
+local SEARCH_LOC_ID = 'search'
+local CLEAR_SEARCH_LOC_ID = 'clear_search'
+local ADD_SELECTED_BUFFS_GROUP_LOC_ID = 'add_selected_buffs_group'
+local ADD_SELECTED_BUFFS_BAR_LOC_ID = 'add_selected_buffs_bar'
 
 local SEARCH_WINDOW_SIZE = { 0, 125 }
 local BUFF_WINDOW_SIZE = { 75, 100 }
@@ -43,7 +46,11 @@ local function draw_inputs()
     Imgui.same_line()
     BuffSearchComponent.select_all = Imgui.small_button(mod:localize(SELECT_VISIBLE_ICONS_LOC_ID))
 
-    BuffSearchComponent.search = Imgui.input_text("Search", BuffSearchComponent.search)
+    BuffSearchComponent.search = Imgui.input_text(mod:localize(SEARCH_LOC_ID), BuffSearchComponent.search)
+    Imgui.same_line()
+    if Imgui.button(mod:localize(CLEAR_SEARCH_LOC_ID)) then
+        BuffSearchComponent.search = ''
+    end
 end
 
 local function draw_buff_button(search_item, cached_icon)
@@ -96,57 +103,20 @@ local function draw_buffs(buffs)
     Imgui.end_child_window()
 end
 
-local function draw_combo(combo_name, combo_items, selected_index)
-    local selected_grouping_text = ''
-
-    if selected_index > 1 then
-        selected_grouping_text = combo_items[selected_index - 1]
-    end
-
-    if Imgui.begin_combo(combo_name, selected_grouping_text) then
-        if combo_items and #combo_items > 0 then
-            local is_selected = selected_index == 1
-            if Imgui.selectable('', is_selected) then
-                selected_index = 1
-            end
-
-            if is_selected then
-                Imgui.set_item_default_focus()
-            end
-
-            for index, item in ipairs(combo_items) do
-                is_selected = index == selected_index - 1
-
-                if Imgui.selectable(item, is_selected) then
-                    selected_index = index + 1
-                end
-
-                if is_selected then
-                    Imgui.set_item_default_focus()
-                end
-            end
-        end
-
-        Imgui.end_combo()
-    end
-
-    return selected_index
-end
-
 local function draw_add_to_inputs()
     BuffSearchComponent.add_to_group = Imgui.button(mod:localize(ADD_SELECTED_BUFFS_GROUP_LOC_ID))
     Imgui.same_line()
 
     local groupings = mod:get(GROUPINGS_SETTING_ID)
     local groupings_names = mod.unpack_values_from_tables(groupings, 'name')
-    BuffSearchComponent.selected_grouping_index = draw_combo('', groupings_names, BuffSearchComponent.selected_grouping_index)
+    BuffSearchComponent.selected_grouping_index = Imgui.draw_combo('', groupings_names, BuffSearchComponent.selected_grouping_index)
 
     BuffSearchComponent.add_to_buff_bar = Imgui.button(mod:localize(ADD_SELECTED_BUFFS_BAR_LOC_ID))
     Imgui.same_line()
 
     local buff_bars = mod:get(BUFF_BARS_SETTING_ID)
     local buff_bars_names = mod.unpack_values_from_tables(buff_bars, 'name')
-    BuffSearchComponent.selected_buff_bar_index = draw_combo(' ', buff_bars_names, BuffSearchComponent.selected_buff_bar_index)
+    BuffSearchComponent.selected_buff_bar_index = Imgui.draw_combo(' ', buff_bars_names, BuffSearchComponent.selected_buff_bar_index)
 end
 
 local function toggle_hidden_for_visible_buffs(buffs, flag)
@@ -175,6 +145,34 @@ local function add_selected_to_table(targetTbl, buffs)
     end
 end
 
+local function add_selected_to_grouping(buffs)
+    local groupings = mod:get(GROUPINGS_SETTING_ID)
+    local selected_group = groupings[BuffSearchComponent.selected_grouping_index - 1]
+
+    if not selected_group.buffs then
+        selected_group.buffs = {}
+    end
+
+    add_selected_to_table(selected_group.buffs, buffs)
+    BuffSearchComponent.selected_grouping_index = 1
+
+    mod:set(GROUPINGS_SETTING_ID, groupings)
+end
+
+local function add_selected_to_buff_bar(buffs)
+    local buff_bars = mod:get(BUFF_BARS_SETTING_ID)
+    local selected_buff_bar = buff_bars[BuffSearchComponent.selected_buff_bar_index - 1]
+
+    if not selected_buff_bar.buffs then
+        selected_buff_bar.buffs = {}
+    end
+
+    add_selected_to_table(selected_buff_bar.buffs, buffs)
+    BuffSearchComponent.selected_buff_bar_index = 1
+
+    mod:set(BUFF_BARS_SETTING_ID, buff_bars)
+end
+
 local function update(buffs)
     if BuffSearchComponent.unhide_all then
         toggle_hidden_for_visible_buffs(buffs, false)
@@ -189,27 +187,9 @@ local function update(buffs)
     end
 
     if BuffSearchComponent.add_to_group and BuffSearchComponent.selected_grouping_index > 1 then
-        local groupings = mod:get(GROUPINGS_SETTING_ID)
-        local selected_group = groupings[BuffSearchComponent.selected_grouping_index - 1]
-
-        if not selected_group.buffs then
-            selected_group.buffs = {}
-        end
-
-        add_selected_to_table(selected_group.buffs, buffs)
-
-        mod:set(GROUPINGS_SETTING_ID, groupings)
+        add_selected_to_grouping(buffs)
     elseif BuffSearchComponent.add_to_buff_bar then
-        local buff_bars = mod:get(BUFF_BARS_SETTING_ID)
-        local selected_buff_bar = buff_bars[BuffSearchComponent.selected_buff_bar_index - 1]
-
-        if not selected_buff_bar.buffs then
-            selected_buff_bar.buffs = {}
-        end
-
-        add_selected_to_table(selected_buff_bar.buffs, buffs)
-
-        mod:set(BUFF_BARS_SETTING_ID, buff_bars)
+        add_selected_to_buff_bar(buffs)
     end
 end
 

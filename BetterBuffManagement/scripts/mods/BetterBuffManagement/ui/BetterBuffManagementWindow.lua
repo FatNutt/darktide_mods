@@ -20,14 +20,6 @@ local BUFF_BARS_SETTING_ID = 'bbm_buff_bars'
 
 local BUFF_MOD_DATA_SETTING_ID = 'bbm_buff_mod_data'
 
-local BUFF_DATA_META_TABLE = {}
-BUFF_DATA_META_TABLE.__newindex = function(tbl, key, value)
-    rawset(tbl, key, value)
-    if key ~= 'meta' then
-        tbl.meta.dirty = true
-    end
-end
-
 -- -------------------------------
 -- ------- Local Functions -------
 -- -------------------------------

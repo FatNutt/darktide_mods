@@ -1,40 +1,74 @@
 local mod = get_mod('BetterBuffManagement')
+mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/ui/helpers/combo')
 
 -- -------------------------------
 -- ---------- Constants ----------
 -- -------------------------------
 
 local GROUPINGS_SETTING_ID = 'bbm_groupings'
+
 local CREATE_GROUPING_BUTTON_LOC_ID = 'create_grouping_button'
+local DELETE_GROUPING_BUTTON_LOC_ID = 'delete_grouping_button'
 local REMOVE_BUFF_FROM_GROUPING_LOC_ID = 'remove_buff_from_grouping'
+local GROUPING_NAME_LOC_ID = 'grouping_name'
+local ADD_GROUPING_LOC_ID = 'add_grouping'
+
+local ADD_GROUPING_POPUP_ID = 'add_grouping_popup'
 
 local GROUPING_WINDOW_SIZE = { 0, 125 }
 local BUFF_WINDOW_SIZE = { 75, 100 }
 local BUFF_IMAGE_SIZE = { 64, 64 }
 
-local BuffGroupingsComponent = {}
+local BuffGroupingsComponent = {
+    add_grouping_name = '',
+    selected_grouping_index = 1
+}
 
 -- -------------------------------
 -- ------- Local Functions -------
 -- -------------------------------
+local function draw_add_grouping()
+    local add_grouping = Imgui.button(mod:localize(CREATE_GROUPING_BUTTON_LOC_ID))
+    Imgui.same_line()
+    BuffGroupingsComponent.add_grouping_name = Imgui.input_text('', BuffGroupingsComponent.add_grouping_name)
+
+    return add_grouping
+end
+
+local function draw_delete_grouping(groupings)
+    local delete_group = Imgui.button(mod:localize(DELETE_GROUPING_BUTTON_LOC_ID))
+    Imgui.same_line()
+
+    local groupings_names = mod.unpack_values_from_tables(groupings, 'name')
+    BuffGroupingsComponent.selected_grouping_index = Imgui.draw_combo('  ', groupings_names, BuffGroupingsComponent.selected_grouping_index)
+
+    return delete_group
+end
 
 local function draw_groupings_inputs(groupings)
     local dirty = false
 
+    local add_group = draw_add_grouping()
+    local delete_group = draw_delete_grouping(groupings)
+
+    if add_group or delete_group then
+        dirty = true
+    end
+
     for index, grouping in ipairs(groupings) do
+        if index > 1 then
+            Imgui.same_line()
+        end
+
         local old_flag = grouping.edit or false
         grouping.edit = Imgui.checkbox(grouping.name, old_flag)
 
         if grouping.edit ~= old_flag then
             dirty = true
         end
-
-        Imgui.same_line()
     end
 
-    local add_group = Imgui.button(mod:localize(CREATE_GROUPING_BUTTON_LOC_ID))
-
-    return dirty, add_group
+    return dirty, add_group, delete_group
 end
 
 local function draw_buff(grouping_name, buff)
@@ -42,7 +76,6 @@ local function draw_buff(grouping_name, buff)
 
     Imgui.begin_child_window(buff.template.name .. '_' .. grouping_id .. '_child_window', BUFF_WINDOW_SIZE[1], BUFF_WINDOW_SIZE[2], false)
 
-    --Imgui.image(buff.template.cached_icon, BUFF_IMAGE_SIZE[1], BUFF_IMAGE_SIZE[2], 255, 255, 255, 1)
     Imgui.image_button(buff.template.cached_icon, BUFF_IMAGE_SIZE[1], BUFF_IMAGE_SIZE[2], 255, 255, 255, 1)
 
     local remove = Imgui.button(mod:localize(REMOVE_BUFF_FROM_GROUPING_LOC_ID))
@@ -116,7 +149,7 @@ end
 BuffGroupingsComponent.draw = function(buffs)
     local groupings = mod:get(GROUPINGS_SETTING_ID)
 
-    local is_dirty, add_group = draw_groupings_inputs(groupings)
+    local is_dirty, add_group, delete_group = draw_groupings_inputs(groupings)
 
     for _, grouping in ipairs(groupings) do
         if grouping.edit then
@@ -126,6 +159,21 @@ BuffGroupingsComponent.draw = function(buffs)
                 is_dirty = true
             end
         end
+    end
+
+    if add_group then
+        local new_grouping = {
+            name = BuffGroupingsComponent.add_grouping_name,
+            edit = false,
+            buffs = {}
+        }
+        table.insert(groupings, new_grouping)
+        BuffGroupingsComponent.add_grouping_name = ''
+    end
+
+    if delete_group and BuffGroupingsComponent.selected_grouping_index > 1 then
+        table.remove(groupings, BuffGroupingsComponent.selected_grouping_index - 1)
+        BuffGroupingsComponent.selected_grouping_index = 1
     end
 
     if is_dirty then
