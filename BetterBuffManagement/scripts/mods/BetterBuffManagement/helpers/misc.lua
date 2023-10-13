@@ -15,8 +15,8 @@ function mod.string_is_null_or_whitespace(strVal)
     return strVal:match('^%s*$') ~= nil
 end
 
-function mod.find_index_by_value(arrayTbls, matchvalue)
-    for index, value in ipairs(arrayTbls) do
+function mod.find_index_by_value(arrayTbl, matchValue)
+    for index, value in ipairs(arrayTbl) do
         if value == matchValue then
             return index
         end
@@ -67,4 +67,14 @@ function mod.unpack_values_from_tables(arrayTbls, key)
     end
 
     return extractedTbl
+end
+
+function mod.table_contains_value(arrayTbls, matchValue)
+    for _, value in ipairs(arrayTbls) do
+        if value == matchValue then
+            return true
+        end
+    end
+
+    return false
 end

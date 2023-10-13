@@ -8,8 +8,8 @@ local GROUPINGS_SETTING_ID = 'bbm_groupings'
 local CREATE_GROUPING_BUTTON_LOC_ID = 'create_grouping_button'
 local REMOVE_BUFF_FROM_GROUPING_LOC_ID = 'remove_buff_from_grouping'
 
-local GROUPING_WINDOW_SIZE = { 0, 150 }
-local BUFF_WINDOW_SIZE = { 75, 120 }
+local GROUPING_WINDOW_SIZE = { 0, 125 }
+local BUFF_WINDOW_SIZE = { 75, 100 }
 local BUFF_IMAGE_SIZE = { 64, 64 }
 
 local BuffGroupingsComponent = {}
@@ -39,9 +39,11 @@ end
 
 local function draw_buff(grouping_name, buff)
     local grouping_id = mod.string_to_id(grouping_name)
+
     Imgui.begin_child_window(buff.template.name .. '_' .. grouping_id .. '_child_window', BUFF_WINDOW_SIZE[1], BUFF_WINDOW_SIZE[2], false)
 
-    Imgui.image(buff.template.cached_icon, BUFF_IMAGE_SIZE[1], BUFF_IMAGE_SIZE[2], 255, 255, 255, 1)
+    --Imgui.image(buff.template.cached_icon, BUFF_IMAGE_SIZE[1], BUFF_IMAGE_SIZE[2], 255, 255, 255, 1)
+    Imgui.image_button(buff.template.cached_icon, BUFF_IMAGE_SIZE[1], BUFF_IMAGE_SIZE[2], 255, 255, 255, 1)
 
     local remove = Imgui.button(mod:localize(REMOVE_BUFF_FROM_GROUPING_LOC_ID))
 
@@ -52,18 +54,27 @@ local function draw_buff(grouping_name, buff)
         Imgui.text(buff.template.name)
         Imgui.end_tool_tip()
     end
+
+    return remove
 end
 
 local function draw_buffs(grouping, buffs)
     local buffs_to_remove = {}
 
     if grouping.buffs then
+        local same_line_flag = 1
         for _, buff_name in ipairs(grouping.buffs) do
+            if same_line_flag > 1 then
+                Imgui.same_line()
+            end
+
             local remove_buff = draw_buff(grouping.name, buffs[buff_name])
 
             if remove_buff then
                 table.insert(buffs_to_remove, buff_name)
             end
+
+            same_line_flag = same_line_flag + 1
         end
     end
 
@@ -86,7 +97,10 @@ local function draw_grouping(grouping, buffs)
 
         for _, buff_name in ipairs(buffs_to_remove) do
             local buff_index = mod.find_index_by_value(grouping.buffs, buff_name)
-            table.remove(grouping.buffs, buff_name)
+
+            if buff_index then
+                table.remove(grouping.buffs, buff_index)
+            end
         end
 
         Imgui.end_child_window()

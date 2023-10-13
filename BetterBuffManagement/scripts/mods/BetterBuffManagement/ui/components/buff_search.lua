@@ -19,13 +19,15 @@ local BUFF_WINDOW_SIZE = { 75, 100 }
 local BUFF_BUTTON_SIZE = { 64, 64 }
 
 local BuffSearchComponent = {
-    search = '',
-    selected_grouping_index = 1,
-    selected_buff_bar_index = 1,
     unhide_all = false,
     hide_all = false,
     unselect_all = false,
-    select_all = false
+    select_all = false,
+    search = '',
+    selected_grouping_index = 1,
+    selected_buff_bar_index = 1,
+    add_to_group = false, 
+    add_to_buff_bar = false
 }
 
 -- -------------------------------
@@ -132,14 +134,14 @@ local function draw_combo(combo_name, combo_items, selected_index)
 end
 
 local function draw_add_to_inputs()
-    Imgui.button(mod:localize(ADD_SELECTED_BUFFS_GROUP_LOC_ID))
+    BuffSearchComponent.add_to_group = Imgui.button(mod:localize(ADD_SELECTED_BUFFS_GROUP_LOC_ID))
     Imgui.same_line()
 
     local groupings = mod:get(GROUPINGS_SETTING_ID)
     local groupings_names = mod.unpack_values_from_tables(groupings, 'name')
     BuffSearchComponent.selected_grouping_index = draw_combo('', groupings_names, BuffSearchComponent.selected_grouping_index)
 
-    Imgui.button(mod:localize(ADD_SELECTED_BUFFS_BAR_LOC_ID))
+    BuffSearchComponent.add_to_buff_bar = Imgui.button(mod:localize(ADD_SELECTED_BUFFS_BAR_LOC_ID))
     Imgui.same_line()
 
     local buff_bars = mod:get(BUFF_BARS_SETTING_ID)
@@ -165,6 +167,14 @@ local function toggle_selected_for_visible_buffs(buffs, flag)
     end
 end
 
+local function add_selected_to_table(targetTbl, buffs)
+    for buff_name, buff in pairs(buffs) do
+        if buff.data:get_search_item():is_selected() and not mod.table_contains_value(targetTbl, buff_name) then
+            table.insert(targetTbl, buff_name)
+        end
+    end
+end
+
 local function update(buffs)
     if BuffSearchComponent.unhide_all then
         toggle_hidden_for_visible_buffs(buffs, false)
@@ -177,6 +187,30 @@ local function update(buffs)
     elseif BuffSearchComponent.select_all then
         toggle_selected_for_visible_buffs(buffs, true)
     end
+
+    if BuffSearchComponent.add_to_group and BuffSearchComponent.selected_grouping_index > 1 then
+        local groupings = mod:get(GROUPINGS_SETTING_ID)
+        local selected_group = groupings[BuffSearchComponent.selected_grouping_index - 1]
+
+        if not selected_group.buffs then
+            selected_group.buffs = {}
+        end
+
+        add_selected_to_table(selected_group.buffs, buffs)
+
+        mod:set(GROUPINGS_SETTING_ID, groupings)
+    elseif BuffSearchComponent.add_to_buff_bar then
+        local buff_bars = mod:get(BUFF_BARS_SETTING_ID)
+        local selected_buff_bar = buff_bars[BuffSearchComponent.selected_buff_bar_index - 1]
+
+        if not selected_buff_bar.buffs then
+            selected_buff_bar.buffs = {}
+        end
+
+        add_selected_to_table(selected_buff_bar.buffs, buffs)
+
+        mod:set(BUFF_BARS_SETTING_ID, buff_bars)
+    end
 end
 
 -- -------------------------------
@@ -186,7 +220,7 @@ end
 BuffSearchComponent.draw = function(buffs)
     draw_inputs()
     draw_buffs(buffs)
-    draw_add_to_inputs()
+    local add_to_group, add_to_buff_bar = draw_add_to_inputs()
 
     update(buffs)
 end
