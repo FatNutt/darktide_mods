@@ -154,7 +154,7 @@ function BetterBuffManagementWindow:close()
     Imgui.close_imgui()
 end
 
-local debug_once = true
+local debug_once = false
 function BetterBuffManagementWindow:update()
     if self._is_open then
         local _, closed = Imgui.begin_window('Better Buff Managment Configuration', 'always_auto_resize')

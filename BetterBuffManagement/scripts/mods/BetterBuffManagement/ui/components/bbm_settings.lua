@@ -1,4 +1,5 @@
 local mod = get_mod('BetterBuffManagement')
+mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/helpers/misc')
 
 -- -------------------------------
 -- ---------- Constants ----------

@@ -31,5 +31,23 @@ return {
     },
     remove_buff_from_grouping = {
         en = 'Remove'
+    },
+    unhide_all_icons = {
+        en = 'Unhide all visible icons'
+    },
+    hide_all_icons = {
+        en = 'Hide all visible icons'
+    },
+    unselect_all_icons = {
+        en = 'Deselect all visible icons'
+    },
+    select_all_icons = {
+        en = 'Select all visible icons'
+    },
+    add_selected_buffs_group = {
+        en = 'Add selected buffs to group'
+    },
+    add_selected_buffs_bar = {
+        en = 'Add selected buffs to bar'
     }
 }

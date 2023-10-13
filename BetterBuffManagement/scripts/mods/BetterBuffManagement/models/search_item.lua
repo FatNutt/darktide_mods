@@ -16,7 +16,6 @@ local SearchItem = class('SearchItem')
 
 function SearchItem:init()
     self._is_selected = false
-    self._click_count = 0
 end
 
 -- -------------------------------
@@ -31,15 +30,12 @@ end
 -- ------- Public Functions ------
 -- -------------------------------
 
-function SearchItem:clicked()
-    self._click_count = self._click_count + 1
+function SearchItem:toggle_selected(flag)
+    self._is_selected = flag
+end
 
-    if self._click_count == 1 then
-        self._is_selected = true
-    elseif self._click_count == 2 then
-        self._click_count = 0
-        self._is_selected = false
-    end
+function SearchItem:clicked()
+    self._is_selected = not self._is_selected
 end
 
 function SearchItem:is_selected()
