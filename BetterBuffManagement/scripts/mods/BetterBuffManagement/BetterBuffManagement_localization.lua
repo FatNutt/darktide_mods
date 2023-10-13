@@ -25,5 +25,11 @@ return {
     },
     reset_all_settings = {
         en = 'Reset all settings'
+    },
+    create_grouping_button = {
+        en = '+'
+    },
+    remove_buff_from_grouping = {
+        en = 'Remove'
     }
 }

@@ -1,5 +1,30 @@
 local mod = get_mod('BetterBuffManagement')
 
+function mod.string_to_id(strVal)
+    strVal = string.lower(strVal)
+    strVal = string.gsub(strVal, " ", "_")
+    
+    return strVal
+end
+
+function mod.string_is_null_or_whitespace(strVal)
+    if strVal == nil then
+        return true
+    end
+
+    return strVal:match('^%s*$') ~= nil
+end
+
+function mod.find_index_by_value(arrayTbls, matchvalue)
+    for index, value in ipairs(arrayTbls) do
+        if value == matchValue then
+            return index
+        end
+    end
+
+    return nil
+end
+
 function mod.find_index_by_key_value_pair(arrayTbls, matchKey, matchValue)
     for tblIndex, tblValue in ipairs(arrayTbls) do
         if type(tblValue) == 'table' and tblValue[matchKey] == matchValue then

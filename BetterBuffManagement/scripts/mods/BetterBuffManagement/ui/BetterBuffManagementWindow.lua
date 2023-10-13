@@ -1,5 +1,11 @@
 local mod = get_mod('BetterBuffManagement')
-mod:io_dofile("BetterBuffManagement/scripts/mods/BetterBuffManagement/helpers/misc")
+mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/helpers/misc')
+
+local BuffModData = mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/models/buff_mod_data')
+
+local BetterBuffManagementSettingsComponent = mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/ui/components/bbm_settings')
+local BuffGroupingsComponent = mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/ui/components/buff_groupings')
+local BuffSearchComponent = mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/ui/components/buff_search')
 
 local BetterBuffManagementWindow = class('BetterBuffManagementWindow')
 
@@ -10,13 +16,17 @@ local BetterBuffManagementWindow = class('BetterBuffManagementWindow')
 local BUFF_TEMPLATES = require('scripts/settings/buff/buff_templates')
 local MASTER_ITEMS = require('scripts/backend/master_items')
 
-local GROUPINGS_SETTING_ID = 'bbm_groupings'
 local BUFF_BARS_SETTING_ID = 'bbm_buff_bars'
 
-local ADD_BUFF_DIRECTION_SETTING_ID = 'add_buff_direction'
-local TOGGLE_HIDDEN_BUFFS_SETTING_ID = 'toggle_hidden_buffs'
+local BUFF_MOD_DATA_SETTING_ID = 'bbm_buff_mod_data'
 
-local RESET_SETTIINGS_LOCALIZATION_ID = 'reset_all_settings'
+local BUFF_DATA_META_TABLE = {}
+BUFF_DATA_META_TABLE.__newindex = function(tbl, key, value)
+    rawset(tbl, key, value)
+    if key ~= 'meta' then
+        tbl.meta.dirty = true
+    end
+end
 
 -- -------------------------------
 -- ------- Local Functions -------
@@ -26,42 +36,7 @@ local function get_widget_by_setting_id(widgets, setting_id_value)
     return mod.find_table_by_key_value_pair(widgets, 'setting_id', setting_id_value)
 end
 
-local function reset_all_settings(widgets)
-    for _, widget in ipairs(widgets) do
-        mod:set(widget.setting_id, widget.default_value)
-    end
-end
-
--- -------------------------------
--- --------- Constructor ---------
--- -------------------------------
-
-function BetterBuffManagementWindow:init()
-    self._is_open = false
-    self._cached_items = nil
-    self._buffs = nil
-    self._groupings = {
-        { name = 'grouping_1', display_name = 'Grouping 1' },
-        { name = 'grouping_2', display_name = 'Grouping 2' },
-        { name = 'grouping_3', display_name = 'Grouping 3' },
-    }
-    -- mod:set(GROUPINGS_SETTING_ID, self._groupings) -- DEBUG: REMOVE ME WHEN DONE
-    self._buff_bars = {}
-
-    if not mod:get(GROUPINGS_SETTING_ID) then
-        mod:set(GROUPINGS_SETTING_ID, self._groupings)
-    end
-
-    if not mod:get(BUFF_BARS_SETTING_ID) then
-        mod:set(BUFF_BARS_SETTING_ID, self._buff_bars)
-    end
-end
-
--- -------------------------------
--- ------ Private Functions ------
--- -------------------------------
-
-function BetterBuffManagementWindow:_get_icon(buff_template)
+local function get_icon(buff_template, cached_items)
     if buff_template.hide_icon_in_hud then
         return nil
     end
@@ -72,13 +47,13 @@ function BetterBuffManagementWindow:_get_icon(buff_template)
 
     local buff_name = buff_template.name
 
-    if string.find(buff_name, "_parent") then
-        buff_name = string.gsub(buff_name, "_parent", "")
+    if string.find(buff_name, '_parent') then
+        buff_name = string.gsub(buff_name, '_parent', '')
     end
 
-    for _, item in pairs(self._cached_items) do
+    for _, item in pairs(cached_items) do
         if item.trait == buff_name then
-            if item.icon and item.icon ~= "" then
+            if item.icon and item.icon ~= '' then
                 return item.icon
             end
         end
@@ -87,100 +62,52 @@ function BetterBuffManagementWindow:_get_icon(buff_template)
     return nil
 end
 
-function BetterBuffManagementWindow:_update_add_buff_direction_combo(widgets)
-    if widgets then
-        local widget = get_widget_by_setting_id(widgets, ADD_BUFF_DIRECTION_SETTING_ID)
+-- -------------------------------
+-- --------- Constructor ---------
+-- -------------------------------
 
-        if widget then
-            local items = widget.options
-            local setting_value = mod:get(ADD_BUFF_DIRECTION_SETTING_ID)
-            local selected_item = mod.find_table_by_key_value_pair(items, 'value', setting_value)
-    
-            if Imgui.begin_combo(mod:localize(widget.setting_id), selected_item.text) then
-    
-                for index, item in ipairs(items) do
-                    local is_selected = item.value == selected_item.value
-    
-                    if Imgui.selectable(item.text, is_selected) then
-                        mod:set(ADD_BUFF_DIRECTION_SETTING_ID, item.value)
-                    end
-    
-                    if is_selected then
-                        Imgui.set_item_default_focus()
-                    end
-                end
-    
-                Imgui.end_combo()
-            end
+function BetterBuffManagementWindow:init()
+    self._is_open = false
+    self._search = ''
+    self._cached_items = nil
+    self._buffs = {}
+
+    self._buff_bars = {}
+
+    if not mod:get(BUFF_BARS_SETTING_ID) then
+        mod:set(BUFF_BARS_SETTING_ID, self._buff_bars)
+    end
+end
+
+-- -------------------------------
+-- ------ Private Functions ------
+-- -------------------------------
+
+function BetterBuffManagementWindow:_load_all_bbm_buff_data()
+    self._buffs = {}
+
+    local mod_data = mod:get(BUFF_MOD_DATA_SETTING_ID)
+
+    for buff_name, buff_data in pairs(mod_data) do
+        self._buffs[buff_name] = { template = nil, data = BuffModData:new(buff_data) }
+    end
+end
+
+function BetterBuffManagementWindow:_save_all_bbm_buff_data()
+    local mod_data = {}
+
+    -- Only save mod related data
+    for _, buff in pairs(self._buffs) do
+        if buff.data:is_dirty() then
+            mod_data[buff.template.name] = buff.data.get_save_data()
         end
     end
+
+    mod:set(BUFF_MOD_DATA_SETTING_ID, mod_data)
 end
 
-function BetterBuffManagementWindow:_update_toggle_hidden_buffs_checkbox(widgets)
-    local old_flag = mod:get(TOGGLE_HIDDEN_BUFFS_SETTING_ID)
-    local new_flag = Imgui.checkbox(mod:localize(TOGGLE_HIDDEN_BUFFS_SETTING_ID), old_flag)
-
-    if new_flag ~= old_flag then
-        mod:set(TOGGLE_HIDDEN_BUFFS_SETTING_ID, new_flag)
-    end
+function BetterBuffManagementWindow:_draw_buff_bars()
 end
-
-function BetterBuffManagementWindow:_update_reset_all_settings_button(widgets)
-    if Imgui.button(mod:localize(RESET_SETTIINGS_LOCALIZATION_ID)) then
-        reset_all_settings(widgets)
-    end
-end
-
-function BetterBuffManagementWindow:_update_settings()
-    local mod_widgets = mod:get_internal_data('options').widgets
-
-    self:_update_add_buff_direction_combo(mod_widgets)
-    self:_update_toggle_hidden_buffs_checkbox()
-    self:_update_reset_all_settings_button(mod_widgets)
-end
-
-local debug_once_again = false
-function BetterBuffManagementWindow:_update_groupings()
-    local groupings = mod:get(GROUPINGS_SETTING_ID)
-
-    local dirty = false
-    for index, grouping in ipairs(groupings) do
-        local old_flag = grouping.display_header or false
-        grouping.display_header = Imgui.checkbox(grouping.display_name, old_flag)
-
-        if index < #groupings then
-            Imgui.same_line()
-        end
-
-        if grouping.display_header ~= old_flag then
-            dirty = true
-        end
-    end
-    if dirty then
-        mod:set(GROUPINGS_SETTING_ID, groupings)
-    end
-
-    local edittable_groupings = mod.filter_array_by_key_value_pair(groupings, 'display_header', true)
-    dirty = false
-    for _, grouping in ipairs(edittable_groupings) do
-        local old_flag = grouping.is_header_open or false
-        grouping.is_header_open = Imgui.collapsing_header(grouping.display_name, old_flag)
-
-        if old_flag ~= grouping.is_header_open then
-            dirty = true
-        end
-    end
-    if dirty then
-        mod:set(GROUPINGS_SETTING_ID, groupings)
-    end
-end
-
-function BetterBuffManagementWindow:_update_buff_bars()
-end
-
-function BetterBuffManagementWindow:_update_buffs_search()
-end
-
 
 -- -------------------------------
 -- ------- Public Functions ------
@@ -194,16 +121,20 @@ function BetterBuffManagementWindow:open()
         input_manager:push_cursor(name)
     end
 
-    if not self._cached_items and not self._buffs then
-        self._cached_items = MASTER_ITEMS.get_cached()
-        self._buffs = {}
+    self:_load_all_bbm_buff_data()
 
-        for _, buff_template in pairs(BUFF_TEMPLATES) do
-            local hud_icon = self:_get_icon(buff_template)
-            if hud_icon then
-                buff_template.cached_icon = hud_icon
-                self._buffs[buff_template.name] = buff_template
+    local cached_items = MASTER_ITEMS.get_cached()
+
+    for _, buff_template in pairs(BUFF_TEMPLATES) do
+        local hud_icon = get_icon(buff_template, cached_items)
+        if hud_icon then
+            buff_template.cached_icon = hud_icon
+
+            if not self._buffs[buff_template.name] then
+                self._buffs[buff_template.name] = { template = {}, data = BuffModData:new({ buff_template.name })}
             end
+
+            self._buffs[buff_template.name].template = buff_template
         end
     end
 
@@ -231,33 +162,37 @@ function BetterBuffManagementWindow:update()
             self:close()
         end
 
-        self:_update_settings()
+        local mod_widgets = mod:get_internal_data('options').widgets
+        BetterBuffManagementSettingsComponent.draw(mod_widgets)
 
+        Imgui.spacing()
         Imgui.separator()
-        -- Imgui.separator_text(mod:localize('grouping_separator'))
+        Imgui.spacing()
 
-        self:_update_groupings()
+        BuffGroupingsComponent.draw(self._buffs)
 
+        Imgui.spacing()
         Imgui.separator()
-        -- Imgui.separator_text(mod:localize('buff_bars_separator'))
+        Imgui.spacing()
 
-        -- self:_update_buff_bars()
+        -- self:_draw_buff_bars()
 
+        Imgui.spacing()
         Imgui.separator()
-        -- Imgui.separator_text(mod:localize('buffs_search_separator'))
+        Imgui.spacing()
 
-        -- self:_update_buffs_search()
+        BuffSearchComponent.draw(self._buffs)
 
-        if not debug_once then
-            debug_once = true
+        if debug_once then
+            debug_once = false
 
             local debug_tbl = {}
             for key, value in pairs(Imgui) do
-                if string.find(key, 'line') then
+                if string.find(key, 'popup') then
                     table.insert(debug_tbl, key)
                 end
             end
-            mod:dump(debug_tbl)
+            mod:dump(debug_tbl, '', 3)
         end
 
         Imgui.end_window()
