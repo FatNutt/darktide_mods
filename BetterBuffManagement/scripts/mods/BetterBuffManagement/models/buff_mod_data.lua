@@ -36,6 +36,7 @@ function BuffModData:init(params)
     end
 
     self.is_hidden = params.is_hidden or false
+    self.is_grouping = params.is_grouping or false
     self._meta = {
         search_item = SearchItem:new()
     }

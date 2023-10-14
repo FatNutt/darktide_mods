@@ -5,6 +5,7 @@ local BuffModData = mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffM
 
 local BetterBuffManagementSettingsComponent = mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/ui/components/bbm_settings')
 local BuffGroupingsComponent = mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/ui/components/buff_groupings')
+local BuffBarsComponent = mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/ui/components/buff_bars')
 local BuffSearchComponent = mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/ui/components/buff_search')
 
 local BetterBuffManagementWindow = class('BetterBuffManagementWindow')
@@ -16,9 +17,8 @@ local BetterBuffManagementWindow = class('BetterBuffManagementWindow')
 local BUFF_TEMPLATES = require('scripts/settings/buff/buff_templates')
 local MASTER_ITEMS = require('scripts/backend/master_items')
 
-local BUFF_BARS_SETTING_ID = 'bbm_buff_bars'
-
 local BUFF_MOD_DATA_SETTING_ID = 'bbm_buff_mod_data'
+local GROUPINGS_SETTING_ID = 'bbm_groupings'
 
 -- -------------------------------
 -- ------- Local Functions -------
@@ -63,12 +63,6 @@ function BetterBuffManagementWindow:init()
     self._search = ''
     self._cached_items = nil
     self._buffs = {}
-
-    self._buff_bars = {}
-
-    if not mod:get(BUFF_BARS_SETTING_ID) then
-        mod:set(BUFF_BARS_SETTING_ID, self._buff_bars)
-    end
 end
 
 -- -------------------------------
@@ -89,9 +83,9 @@ function BetterBuffManagementWindow:_save_all_bbm_buff_data()
     local mod_data = {}
 
     -- Only save mod related data
-    for _, buff in pairs(self._buffs) do
+    for buff_name, buff in pairs(self._buffs) do
         if buff.data:is_dirty() then
-            mod_data[buff.template.name] = buff.data.get_save_data()
+            mod_data[buff_name] = buff.data.get_save_data()
         end
     end
 
@@ -123,11 +117,30 @@ function BetterBuffManagementWindow:open()
             buff_template.cached_icon = hud_icon
 
             if not self._buffs[buff_template.name] then
-                self._buffs[buff_template.name] = { template = {}, data = BuffModData:new({ buff_template.name })}
+                self._buffs[buff_template.name] = { template = nil, data = BuffModData:new({ name = buff_template.name })}
             end
 
             self._buffs[buff_template.name].template = buff_template
         end
+    end
+
+    local groupings = mod:get(GROUPINGS_SETTING_ID)
+    for _, grouping in ipairs(groupings) do
+        local grouping_buff = self._buffs[mod.string_to_id(grouping.name)]
+
+        if not grouping_buff then
+            self._buffs[mod.string_to_id(grouping.name)] = { 
+                template = nil, 
+                data = BuffModData:new({ 
+                    name = mod.string_to_id(grouping.name), 
+                    display_name = grouping.name,
+                    is_grouping = true
+                })
+            }
+            grouping_buff = self._buffs[mod.string_to_id(grouping.name)]
+        end
+
+        grouping_buff.template = self._buffs[grouping.buffs[grouping.selected_buff_index]].template
     end
 
     self._is_open = true
@@ -167,7 +180,7 @@ function BetterBuffManagementWindow:update()
         Imgui.separator()
         Imgui.spacing()
 
-        -- self:_draw_buff_bars()
+        BuffBarsComponent.draw(self._buffs)
 
         Imgui.spacing()
         Imgui.separator()

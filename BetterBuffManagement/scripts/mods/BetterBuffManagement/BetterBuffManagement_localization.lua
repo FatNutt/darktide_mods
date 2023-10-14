@@ -41,6 +41,21 @@ return {
     add_grouping = {
         en = 'Add grouping'
     },
+    create_buff_bar_button = {
+        en = 'Create buff bar'
+    },
+    delete_buff_bar_button = {
+        en = 'Delete buff bar'
+    },
+    remove_buff_from_buff_bar = {
+        en = 'Remove'
+    },
+    buff_bar_name = {
+        en = 'Buff bar name'
+    },
+    add_buff_bar = {
+        en = 'Add buff bar'
+    },
     unhide_all_icons = {
         en = 'Unhide all visible icons'
     },
