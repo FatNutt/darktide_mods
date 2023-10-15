@@ -37,6 +37,11 @@ local BuffSearchComponent = {
 -- ------- Local Functions -------
 -- -------------------------------
 
+local function should_display_buff(buff_name)
+    local lower_search = string.lower(BuffSearchComponent.search)
+    return lower_search == '' or #lower_search > 0 and string.find(buff_name, lower_search)
+end
+
 local function filter_out_buffs_in_groupings(buffs)
     local groupings = mod:get(GROUPINGS_SETTING_ID)
 
@@ -113,7 +118,7 @@ local function draw_buffs(buffs)
             Imgui.same_line()
         end
 
-        if buff.template and (search == '' or #search > 0 and string.find(buff_name, search)) then
+        if buff.template and should_display_buff(buff_name, search) then
             draw_buff(buff_name, buff)
         end
 
@@ -142,7 +147,7 @@ end
 local function toggle_hidden_for_visible_buffs(buffs, flag)
     local search = BuffSearchComponent.search
     for buff_name, buff in pairs(buffs) do    
-        if search == '' or #search > 0 and string.find(buff_name, search) then
+        if should_display_buff(buff_name, search) then
             buff.data.is_hidden = flag
         end
     end
@@ -151,7 +156,7 @@ end
 local function toggle_selected_for_visible_buffs(buffs, flag)
     local search = BuffSearchComponent.search
     for buff_name, buff in pairs(buffs) do    
-        if search == '' or #search > 0 and string.find(buff_name, search) then
+        if should_display_buff(buff_name, search) then
             buff.data:get_search_item():toggle_selected(flag)
         end
     end
@@ -165,6 +170,12 @@ local function add_selected_to_table(targetTbl, buffs)
     end
 end
 
+local function is_buff_addible_to_group(buff_name, buff_data, buffs_tbl)
+    return not buff_data.is_grouping and 
+        buff_data:get_search_item():is_selected() and 
+        not mod.table_contains_value(buffs_tbl, buff_name)
+end
+
 local function add_selected_to_grouping(buffs)
     local groupings = mod:get(GROUPINGS_SETTING_ID)
     local selected_group = groupings[BuffSearchComponent.selected_grouping_index - 1]
@@ -174,13 +185,17 @@ local function add_selected_to_grouping(buffs)
     end
 
     for buff_name, buff in pairs(buffs) do
-        if not buff.data.is_grouping and buff.data:get_search_item():is_selected() and not mod.table_contains_value(selected_group.buffs, buff_name) then
+        if is_buff_addible_to_group(buff_name, buff.data, selected_group.buffs) then
             table.insert(selected_group.buffs, buff_name)
         end
     end
 
-    if not selected_group.selected_buff_index or selected_group.selected_buff_index < 1 then
+    mod:dump({ selected_group.buffs, selected_group.selected_buff_index })
+
+    if #selected_group.buffs > 0 and selected_group.selected_buff_index == 0 then
         selected_group.selected_buff_index = 1
+        local grouping_id = mod.name_to_grouping_id(selected_group.name)
+        buffs[grouping_id].template = buffs[selected_group.buffs[1]].template
     end
 
     BuffSearchComponent.selected_grouping_index = 1
@@ -202,6 +217,15 @@ local function add_selected_to_buff_bar(buffs)
     mod:set(BUFF_BARS_SETTING_ID, buff_bars)
 end
 
+local function clear_selected(buffs)
+    for _, buff in pairs(buffs) do
+        local search_item = buff.data:get_search_item()
+        if search_item:is_selected() then
+            search_item:toggle_selected(false)
+        end
+    end
+end
+
 local function update(buffs)
     if BuffSearchComponent.unhide_all then
         toggle_hidden_for_visible_buffs(buffs, false)
@@ -220,6 +244,10 @@ local function update(buffs)
     elseif BuffSearchComponent.add_to_buff_bar then
         add_selected_to_buff_bar(buffs)
     end
+
+    if BuffSearchComponent.add_to_group or BuffSearchComponent.add_to_buff_bar then
+        clear_selected(buffs)
+    end
 end
 
 -- -------------------------------
@@ -229,9 +257,11 @@ end
 BuffSearchComponent.draw = function(buffs)
     local filtered_buffs = filter_out_buffs_in_groupings(buffs)
 
+
     draw_inputs()
     draw_buffs(filtered_buffs)
     local add_to_group, add_to_buff_bar = draw_add_to_inputs()
+
 
     update(filtered_buffs)
 end

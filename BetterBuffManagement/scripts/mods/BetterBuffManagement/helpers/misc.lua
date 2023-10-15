@@ -7,6 +7,15 @@ function mod.string_to_id(strVal)
     return strVal
 end
 
+function mod.name_to_grouping_id(name)
+    return mod.string_to_id(name) .. '_grouping'
+end
+
+function mod.name_to_buff_bar_id(name)
+    return mod.string_to_id(name) .. '_buff_bar'
+end
+
+
 function mod.string_is_null_or_whitespace(strVal)
     if strVal == nil then
         return true

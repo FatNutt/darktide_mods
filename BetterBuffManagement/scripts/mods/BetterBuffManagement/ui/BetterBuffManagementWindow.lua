@@ -69,6 +69,30 @@ end
 -- ------ Private Functions ------
 -- -------------------------------
 
+function BetterBuffManagementWindow:_load_grouping_buff_data()
+    local groupings = mod:get(GROUPINGS_SETTING_ID)
+    for _, grouping in ipairs(groupings) do
+        local grouping_id = mod.name_to_grouping_id(grouping.name)
+        local grouping_buff = self._buffs[grouping_id]
+
+        if not grouping_buff then
+            self._buffs[grouping_id] = { 
+                template = nil, 
+                data = BuffModData:new({ 
+                    name = mod.string_to_id(grouping.name), 
+                    display_name = grouping.name,
+                    is_grouping = true
+                })
+            }
+            grouping_buff = self._buffs[grouping_id]
+        end
+
+        if grouping.buffs and #grouping.buffs > 0 and grouping.selected_buff_index > 0 then
+            grouping_buff.template = self._buffs[grouping.buffs[grouping.selected_buff_index]].template
+        end
+    end
+end
+
 function BetterBuffManagementWindow:_load_all_bbm_buff_data()
     self._buffs = {}
 
@@ -124,24 +148,7 @@ function BetterBuffManagementWindow:open()
         end
     end
 
-    local groupings = mod:get(GROUPINGS_SETTING_ID)
-    for _, grouping in ipairs(groupings) do
-        local grouping_buff = self._buffs[mod.string_to_id(grouping.name)]
-
-        if not grouping_buff then
-            self._buffs[mod.string_to_id(grouping.name)] = { 
-                template = nil, 
-                data = BuffModData:new({ 
-                    name = mod.string_to_id(grouping.name), 
-                    display_name = grouping.name,
-                    is_grouping = true
-                })
-            }
-            grouping_buff = self._buffs[mod.string_to_id(grouping.name)]
-        end
-
-        grouping_buff.template = self._buffs[grouping.buffs[grouping.selected_buff_index]].template
-    end
+    self:_load_grouping_buff_data()
 
     self._is_open = true
     Imgui.open_imgui()
@@ -171,19 +178,31 @@ function BetterBuffManagementWindow:update()
         BetterBuffManagementSettingsComponent.draw(mod_widgets)
 
         Imgui.spacing()
+        Imgui.spacing()
+        Imgui.spacing()
         Imgui.separator()
+        Imgui.spacing()
+        Imgui.spacing()
         Imgui.spacing()
 
         BuffGroupingsComponent.draw(self._buffs)
 
         Imgui.spacing()
+        Imgui.spacing()
+        Imgui.spacing()
         Imgui.separator()
+        Imgui.spacing()
+        Imgui.spacing()
         Imgui.spacing()
 
         BuffBarsComponent.draw(self._buffs)
 
         Imgui.spacing()
+        Imgui.spacing()
+        Imgui.spacing()
         Imgui.separator()
+        Imgui.spacing()
+        Imgui.spacing()
         Imgui.spacing()
 
         BuffSearchComponent.draw(self._buffs)

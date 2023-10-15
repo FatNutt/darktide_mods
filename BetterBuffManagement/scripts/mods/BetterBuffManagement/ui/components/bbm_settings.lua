@@ -67,10 +67,9 @@ end
 
 BetterBuffManagementSettingsComponent.draw = function(widgets)
     local add_buff_direction_widget = mod.find_table_by_key_value_pair(widgets, 'setting_id', ADD_BUFF_DIRECTION_SETTING_ID)
+
     draw_add_buff_direction_combo(add_buff_direction_widget)
-
     draw_toggle_hidden_buffs_checkbox()
-
     draw_reset_all_settings_button(widgets)
 end
 

@@ -147,7 +147,8 @@ end
 BuffBuffBarsComponent.draw = function(buffs)
     local buff_bars = mod:get(BUFF_BARS_SETTING_ID)
 
-    local is_dirty, add_group, delete_group = draw_buff_bars_inputs(buff_bars)
+
+    local is_dirty, add_buff_bar, delete_buff_bar = draw_buff_bars_inputs(buff_bars)
 
     for _, buff_bar in ipairs(buff_bars) do
         if buff_bar.edit then
@@ -159,7 +160,8 @@ BuffBuffBarsComponent.draw = function(buffs)
         end
     end
 
-    if add_group then
+
+    if add_buff_bar and not mod.string_is_null_or_whitespace(BuffBuffBarsComponent.add_buff_bar_name) then
         local new_buff_bar = {
             name = BuffBuffBarsComponent.add_buff_bar_name,
             edit = false,
@@ -169,7 +171,7 @@ BuffBuffBarsComponent.draw = function(buffs)
         BuffBuffBarsComponent.add_buff_bar_name = ''
     end
 
-    if delete_group and BuffBuffBarsComponent.selected_buff_bar_index > 1 then
+    if delete_buff_bar and BuffBuffBarsComponent.selected_buff_bar_index > 1 then
         table.remove(buff_bars, BuffBuffBarsComponent.selected_buff_bar_index - 1)
         BuffBuffBarsComponent.selected_buff_bar_index = 1
     end

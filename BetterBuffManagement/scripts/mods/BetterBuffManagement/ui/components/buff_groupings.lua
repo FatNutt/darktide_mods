@@ -9,6 +9,7 @@ local BuffModData = mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffM
 -- -------------------------------
 
 local GROUPINGS_SETTING_ID = 'bbm_groupings'
+local BUFF_BARS_SETTING_ID = 'bbm_buff_bars'
 
 local CREATE_GROUPING_BUTTON_LOC_ID = 'create_grouping_button'
 local DELETE_GROUPING_BUTTON_LOC_ID = 'delete_grouping_button'
@@ -22,12 +23,16 @@ local BUFF_BUTTON_SIZE = { 64, 64 }
 
 local BuffGroupingsComponent = {
     add_grouping_name = '',
-    selected_grouping_index = 1
+    selected_grouping_index = 0
 }
 
 -- -------------------------------
 -- ------- Local Functions -------
 -- -------------------------------
+local function id_to_grouping_id(id)
+    return id .. '_grouping'
+end
+
 local function draw_add_grouping()
     local add_grouping = Imgui.button(mod:localize(CREATE_GROUPING_BUTTON_LOC_ID))
     Imgui.same_line()
@@ -134,9 +139,10 @@ end
 
 local function draw_grouping(grouping, buffs)
     local dirty = false
+    local grouping_id = mod.name_to_grouping_id(grouping.name)
 
     if Imgui.collapsing_header(grouping.name) then
-        local child_window_id = grouping.name .. '_child_window'
+        local child_window_id = grouping_id .. '_child_window'
 
         Imgui.begin_child_window(child_window_id, GROUPING_WINDOW_SIZE[1], GROUPING_WINDOW_SIZE[2], true, 'always_auto_resize', 'horizontal_scrollbar')
 
@@ -157,10 +163,12 @@ local function draw_grouping(grouping, buffs)
                 table.remove(grouping.buffs, buff_index)
             end
 
-            if buff_index == grouping.selected_buff_index then
+            if #grouping.buffs > 0 and buff_index == grouping.selected_buff_index then
                 grouping.selected_buff_index = 1
-
-                buffs[mod.string_to_id(grouping.name)].template = buffs[grouping.buffs[1]]
+                buffs[grouping_id].template = buffs[grouping.buffs[1]].template
+            else
+                grouping.selected_buff_index = 0
+                buffs[grouping_id].template = nil
             end
         end
 
@@ -179,10 +187,10 @@ local function add_group_to_groupings(groupings, buffs)
     }
 
     table.insert(groupings, new_grouping)
-    buffs[mod.string_to_id(new_grouping.name)] = {
+    buffs[mod.name_to_grouping_id(new_grouping.name)] = {
         template = nil,
         data = BuffModData:new({
-            name = mod.string_to_id(new_grouping.name),
+            name = mod.name_to_grouping_id(new_grouping.name),
             display_name = new_grouping.name,
             is_grouping = true
         })
@@ -191,12 +199,33 @@ local function add_group_to_groupings(groupings, buffs)
     BuffGroupingsComponent.add_grouping_name = ''
 end
 
+local function delete_group_from_groupings(groupings, buffs)
+    local grouping_index = BuffGroupingsComponent.selected_grouping_index - 1
+    local grouping = groupings[grouping_index]
+    local grouping_id = mod.name_to_grouping_id(grouping.name)
+
+    local buff_bars = mod:get(BUFF_BARS_SETTING_ID)
+    for _, bar in ipairs(buff_bars) do
+        local buff_index = mod.find_index_by_value(bar.buffs, grouping_id)
+
+        if buff_index then
+            table.remove(bar.buffs, buff_index)
+        end
+    end
+    mod:set(BUFF_BARS_SETTING_ID, buff_bars)
+
+    buffs[grouping_id] = nil
+    table.remove(groupings, grouping_index)
+    BuffGroupingsComponent.selected_grouping_index = 1
+end
+
 -- -------------------------------
 -- ------- Public Functions ------
 -- -------------------------------
 
 BuffGroupingsComponent.draw = function(buffs)
     local groupings = mod:get(GROUPINGS_SETTING_ID)
+
 
     local is_dirty, add_group, delete_group = draw_groupings_inputs(groupings)
 
@@ -210,24 +239,30 @@ BuffGroupingsComponent.draw = function(buffs)
         end
     end
 
-    if add_group then
+
+    if add_group and not mod.string_is_null_or_whitespace(BuffGroupingsComponent.add_grouping_name) then
         add_group_to_groupings(groupings, buffs)
         is_dirty = true
     end
 
     if delete_group and BuffGroupingsComponent.selected_grouping_index > 1 then
-        table.remove(groupings, BuffGroupingsComponent.selected_grouping_index - 1)
-        BuffGroupingsComponent.selected_grouping_index = 1
+        delete_group_from_groupings(groupings, buffs)
         is_dirty = true
     end
 
     if is_dirty then
         for _, grouping in ipairs(groupings) do
-            mod:dump(grouping)
-            local grouping_buff = buffs[mod.string_to_id(grouping.name)]
-            local selected_buff_name = grouping.buffs[grouping.selected_buff_index]
+            local grouping_id = mod.name_to_grouping_id(grouping.name)
+            if grouping.buffs and #grouping.buffs == 0 then
+                buffs[grouping_id].template = nil
+            end
 
-            grouping_buff.template = buffs[selected_buff_name].template
+            if grouping.buffs and #grouping.buffs > 0 and grouping.selected_buff_index > 0 then
+                local grouping_buff = buffs[grouping_id]
+                local selected_buff_name = grouping.buffs[grouping.selected_buff_index]
+
+                grouping_buff.template = buffs[selected_buff_name].template
+            end
         end
 
         mod:set(GROUPINGS_SETTING_ID, groupings)
