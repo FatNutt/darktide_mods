@@ -63,6 +63,16 @@ function mod.unpack_values_from_tables(arrayTbls, key)
     return extractedTbl
 end
 
+function mod.unpack_keys_from_table(tbl)
+    local extractedTbl = {}
+
+    for key, _ in pairs(tbl) do
+        table.insert(extractedTbl, key)
+    end
+
+    return extractedTbl
+end
+
 function mod.table_contains_value(arrayTbls, matchValue)
     for _, value in ipairs(arrayTbls) do
         if value == matchValue then

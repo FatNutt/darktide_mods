@@ -38,8 +38,8 @@ local BuffSearchComponent = {
 -- -------------------------------
 
 local function should_display_buff(buff_name)
-    local lower_search = string.lower(BuffSearchComponent.search)
-    return lower_search == '' or #lower_search > 0 and string.find(buff_name, lower_search)
+    local lower_search = BuffSearchComponent.search:lower()
+    return lower_search == '' or (#lower_search > 0 and buff_name:find(lower_search))
 end
 
 local function filter_out_buffs_in_groupings(buffs)
@@ -112,7 +112,7 @@ local function draw_buffs(buffs)
 
     local same_line_flag = 1
     Imgui.begin_child_window('buffs_search_child_window', SEARCH_WINDOW_SIZE[1], SEARCH_WINDOW_SIZE[2], true, 'always_auto_resize', 'horizontal_scrollbar')
-    
+
     for buff_name, buff in pairs(buffs) do
         if same_line_flag > 1 then
             Imgui.same_line()
@@ -190,8 +190,6 @@ local function add_selected_to_grouping(buffs)
         end
     end
 
-    mod:dump({ selected_group.buffs, selected_group.selected_buff_index })
-
     if #selected_group.buffs > 0 and selected_group.selected_buff_index == 0 then
         selected_group.selected_buff_index = 1
         local grouping_id = mod.name_to_grouping_id(selected_group.name)
@@ -257,13 +255,11 @@ end
 BuffSearchComponent.draw = function(buffs)
     local filtered_buffs = filter_out_buffs_in_groupings(buffs)
 
-
     draw_inputs()
     draw_buffs(filtered_buffs)
-    local add_to_group, add_to_buff_bar = draw_add_to_inputs()
+    draw_add_to_inputs()
 
-
-    update(filtered_buffs)
+    update(buffs)
 end
 
 return BuffSearchComponent

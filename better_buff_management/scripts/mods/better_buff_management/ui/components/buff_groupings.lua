@@ -186,6 +186,7 @@ local function add_group_to_groupings(groupings, buffs)
     }
 
     table.insert(groupings, new_grouping)
+    mod:dump({ new_grouping.name, mod.name_to_grouping_id(new_grouping.name)})
     buffs[mod.name_to_grouping_id(new_grouping.name)] = {
         template = nil,
         data = BuffModData:new({

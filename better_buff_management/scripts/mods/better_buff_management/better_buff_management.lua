@@ -5,13 +5,14 @@
 local mod = get_mod('better_buff_management')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/helpers/string')
 
-local BetterBuffManagementWindow = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/better_buff_managementWindow')
+local BetterBuffManagementWindow = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/better_buff_management_window')
 
 
 -- -------------------------------
 -- ---------- Constants ----------
 -- -------------------------------
 
+local GROUPINGS_SETTING_ID = 'bbm_groupings'
 local BUFF_BARS_SETTING_ID = 'bbm_buff_bars'
 
 local configure_window = BetterBuffManagementWindow:new()
@@ -75,6 +76,16 @@ mod.configure_buffs = function()
 end
 
 mod.update = function()
+    local groupings = mod:get(GROUPINGS_SETTING_ID)
+    if groupings == nil then
+        mod:set(GROUPINGS_SETTING_ID, {})
+    end
+    
+    local buff_bars = mod:get(BUFF_BARS_SETTING_ID)
+    if buff_bars == nil then
+        mod:set(BUFF_BARS_SETTING_ID, {})
+    end
+
     if configure_window and configure_window._is_open then
         configure_window:update()
     end

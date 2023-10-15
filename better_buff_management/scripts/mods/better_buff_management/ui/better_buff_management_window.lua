@@ -72,6 +72,7 @@ end
 
 function BetterBuffManagementWindow:_load_grouping_buff_data()
     local groupings = mod:get(GROUPINGS_SETTING_ID)
+
     for _, grouping in ipairs(groupings) do
         local grouping_id = mod.name_to_grouping_id(grouping.name)
         local grouping_buff = self._buffs[grouping_id]
@@ -99,8 +100,10 @@ function BetterBuffManagementWindow:_load_all_bbm_buff_data()
 
     local mod_data = mod:get(BUFF_MOD_DATA_SETTING_ID)
 
-    for buff_name, buff_data in pairs(mod_data) do
-        self._buffs[buff_name] = { template = nil, data = BuffModData:new(buff_data) }
+    if mod_data then
+        for buff_name, buff_data in pairs(mod_data) do
+            self._buffs[buff_name] = { template = nil, data = BuffModData:new(buff_data) }
+        end
     end
 end
 
@@ -169,7 +172,7 @@ end
 
 function BetterBuffManagementWindow:update()
     if self._is_open then
-        local _, closed = Imgui.begin_window('Better Buff Managment Configuration', 'always_auto_resize')
+        local _, closed = Imgui.begin_window(mod:localize('mod_name'), 'always_auto_resize')
         if closed then
             self:close()
         end

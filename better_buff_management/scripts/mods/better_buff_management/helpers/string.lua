@@ -12,7 +12,7 @@ end
 
 function string.to_snake_case(self)
     local retVal = self:lower()
-    retVal = self:gsub(" ", "_")
+    retVal = retVal:gsub(" ", "_")
 
     return retVal
 end
