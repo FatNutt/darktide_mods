@@ -20,12 +20,12 @@ local configure_window = BetterBuffManagementWindow:new()
 -- ------- Local Functions -------
 -- -------------------------------
 
-local function create_hud_element_definition()
+local function create_hud_element_definition(buff_bar)
     return {
         package = "packages/ui/hud/player_buffs/player_buffs",
         use_retained_mode = true,
         use_hud_scale = true,
-        class_name = "HudElementPriorityBuffs",
+        class_name = buff_bar.name:to_pascal_case(),
         filename = "BuffHUDImprovements/scripts/mods/BuffHUDImprovements/HudElementPriorityBuffs",
         visibility_groups = {
             "dead",
@@ -42,6 +42,7 @@ local function get_hud_elements_definitions()
 
     for _, bar in ipairs(buff_bars) do
         if bar.buffs and #bar.buffs > 0 then
+            
         end
     end
 
