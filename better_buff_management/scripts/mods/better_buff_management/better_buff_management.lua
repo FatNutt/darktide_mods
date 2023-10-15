@@ -2,10 +2,10 @@
 -- --------- Definitions ---------
 -- -------------------------------
 
-local mod = get_mod('BetterBuffManagement')
-mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/helpers/string')
+local mod = get_mod('better_buff_management')
+mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/helpers/string')
 
-local BetterBuffManagementWindow = mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/ui/BetterBuffManagementWindow')
+local BetterBuffManagementWindow = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/better_buff_managementWindow')
 
 
 -- -------------------------------

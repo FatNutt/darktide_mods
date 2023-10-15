@@ -1,7 +1,7 @@
-local mod = get_mod('BetterBuffManagement')
-mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/ui/helpers/combo')
+local mod = get_mod('better_buff_management')
+mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/helpers/combo')
 
-local BuffModData = mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/models/buff_mod_data')
+local BuffModData = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/models/buff_mod_data')
 
 -- -------------------------------
 -- ---------- Constants ----------

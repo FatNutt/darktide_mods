@@ -1,13 +1,13 @@
-local mod = get_mod('BetterBuffManagement')
-mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/helpers/misc')
-mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/ui/helpers/separator')
+local mod = get_mod('better_buff_management')
+mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/helpers/misc')
+mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/helpers/separator')
 
-local BuffModData = mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/models/buff_mod_data')
+local BuffModData = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/models/buff_mod_data')
 
-local BetterBuffManagementSettingsComponent = mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/ui/components/bbm_settings')
-local BuffGroupingsComponent = mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/ui/components/buff_groupings')
-local BuffBarsComponent = mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/ui/components/buff_bars')
-local BuffSearchComponent = mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/ui/components/buff_search')
+local BetterBuffManagementSettingsComponent = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/components/bbm_settings')
+local BuffGroupingsComponent = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/components/buff_groupings')
+local BuffBarsComponent = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/components/buff_bars')
+local BuffSearchComponent = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/components/buff_search')
 
 local BetterBuffManagementWindow = class('BetterBuffManagementWindow')
 

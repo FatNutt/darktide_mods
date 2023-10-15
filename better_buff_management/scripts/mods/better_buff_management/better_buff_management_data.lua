@@ -1,4 +1,4 @@
-local mod = get_mod('BetterBuffManagement')
+local mod = get_mod('better_buff_management')
 
 return {
     name = mod:localize('mod_name'),

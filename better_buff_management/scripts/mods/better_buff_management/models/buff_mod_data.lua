@@ -1,6 +1,6 @@
-local mod = get_mod('BetterBuffManagement')
+local mod = get_mod('better_buff_management')
 
-local SearchItem = mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/models/search_item')
+local SearchItem = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/models/search_item')
 local BuffModData = class('BuffModData')
 
 -- -------------------------------

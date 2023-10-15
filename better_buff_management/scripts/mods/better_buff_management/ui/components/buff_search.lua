@@ -1,6 +1,6 @@
-local mod = get_mod('BetterBuffManagement')
-mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/helpers/misc')
-mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/ui/helpers/combo')
+local mod = get_mod('better_buff_management')
+mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/helpers/misc')
+mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/helpers/combo')
 
 -- -------------------------------
 -- ---------- Constants ----------

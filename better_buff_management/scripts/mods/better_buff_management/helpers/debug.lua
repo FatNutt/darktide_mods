@@ -1,4 +1,4 @@
-local mod = get_mod('BetterBuffManagement')
+local mod = get_mod('better_buff_management')
 
 function mod.dump_keys_from_table(tbl)
     local dump_tbl = {}
