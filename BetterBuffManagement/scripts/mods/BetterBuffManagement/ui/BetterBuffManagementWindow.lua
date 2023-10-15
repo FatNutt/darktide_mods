@@ -1,5 +1,6 @@
 local mod = get_mod('BetterBuffManagement')
 mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/helpers/misc')
+mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/ui/helpers/separator')
 
 local BuffModData = mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/models/buff_mod_data')
 
@@ -53,6 +54,8 @@ local function get_icon(buff_template, cached_items)
 
     return nil
 end
+
+local function draw
 
 -- -------------------------------
 -- --------- Constructor ---------
@@ -166,7 +169,6 @@ function BetterBuffManagementWindow:close()
     Imgui.close_imgui()
 end
 
-local debug_once = false
 function BetterBuffManagementWindow:update()
     if self._is_open then
         local _, closed = Imgui.begin_window('Better Buff Managment Configuration', 'always_auto_resize')
@@ -177,47 +179,17 @@ function BetterBuffManagementWindow:update()
         local mod_widgets = mod:get_internal_data('options').widgets
         BetterBuffManagementSettingsComponent.draw(mod_widgets)
 
-        Imgui.spacing()
-        Imgui.spacing()
-        Imgui.spacing()
-        Imgui.separator()
-        Imgui.spacing()
-        Imgui.spacing()
-        Imgui.spacing()
+        Imgui.draw_custom_separator()
 
         BuffGroupingsComponent.draw(self._buffs)
 
-        Imgui.spacing()
-        Imgui.spacing()
-        Imgui.spacing()
-        Imgui.separator()
-        Imgui.spacing()
-        Imgui.spacing()
-        Imgui.spacing()
+        Imgui.draw_custom_separator()
 
         BuffBarsComponent.draw(self._buffs)
 
-        Imgui.spacing()
-        Imgui.spacing()
-        Imgui.spacing()
-        Imgui.separator()
-        Imgui.spacing()
-        Imgui.spacing()
-        Imgui.spacing()
+        Imgui.draw_custom_separator()
 
         BuffSearchComponent.draw(self._buffs)
-
-        if debug_once then
-            debug_once = false
-
-            local debug_tbl = {}
-            for key, value in pairs(Imgui) do
-                if string.find(key, 'popup') then
-                    table.insert(debug_tbl, key)
-                end
-            end
-            mod:dump(debug_tbl, '', 3)
-        end
 
         Imgui.end_window()
     end
