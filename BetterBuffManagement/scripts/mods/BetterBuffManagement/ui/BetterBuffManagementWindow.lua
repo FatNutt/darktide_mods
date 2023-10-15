@@ -40,8 +40,8 @@ local function get_icon(buff_template, cached_items)
 
     local buff_name = buff_template.name
 
-    if string.find(buff_name, '_parent') then
-        buff_name = string.gsub(buff_name, '_parent', '')
+    if buff_name:find('_parent') then
+        buff_name = buff_name:gsub('_parent', '')
     end
 
     for _, item in pairs(cached_items) do
@@ -54,8 +54,6 @@ local function get_icon(buff_template, cached_items)
 
     return nil
 end
-
-local function draw
 
 -- -------------------------------
 -- --------- Constructor ---------
@@ -82,7 +80,7 @@ function BetterBuffManagementWindow:_load_grouping_buff_data()
             self._buffs[grouping_id] = { 
                 template = nil, 
                 data = BuffModData:new({ 
-                    name = mod.string_to_id(grouping.name), 
+                    name = grouping.name:to_snake_case(),
                     display_name = grouping.name,
                     is_grouping = true
                 })

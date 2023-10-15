@@ -31,7 +31,7 @@ function BuffModData:init(params)
     self._name = params.name
     self.display_name = params.display_name
 
-    if mod.string_is_null_or_whitespace(self.display_name) then
+    if string.is_null_or_whitespace(self.display_name) then
         self.display_name = name
     end
 

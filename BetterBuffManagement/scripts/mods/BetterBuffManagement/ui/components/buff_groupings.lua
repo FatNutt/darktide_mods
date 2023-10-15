@@ -110,7 +110,7 @@ local function draw_buffs(grouping, buffs)
     local is_dirty = false
 
     if grouping.buffs then
-        local grouping_id = mod.string_to_id(grouping.name)
+        local grouping_id = grouping.name:to_snake_case()
         local same_line_flag = 1
         for buff_index, buff_name in ipairs(grouping.buffs) do
             if same_line_flag > 1 then
@@ -239,7 +239,7 @@ BuffGroupingsComponent.draw = function(buffs)
     end
 
 
-    if add_group and not mod.string_is_null_or_whitespace(BuffGroupingsComponent.add_grouping_name) then
+    if add_group and not string.is_null_or_whitespace(BuffGroupingsComponent.add_grouping_name) then
         add_group_to_groupings(groupings, buffs)
         is_dirty = true
     end

@@ -1,27 +1,12 @@
 local mod = get_mod('BetterBuffManagement')
-
-function mod.string_to_id(strVal)
-    strVal = string.lower(strVal)
-    strVal = string.gsub(strVal, " ", "_")
-    
-    return strVal
-end
+mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/helpers/string')
 
 function mod.name_to_grouping_id(name)
-    return mod.string_to_id(name) .. '_grouping'
+    return name:to_snake_case() .. '_grouping'
 end
 
 function mod.name_to_buff_bar_id(name)
-    return mod.string_to_id(name) .. '_buff_bar'
-end
-
-
-function mod.string_is_null_or_whitespace(strVal)
-    if strVal == nil then
-        return true
-    end
-
-    return strVal:match('^%s*$') ~= nil
+    return name:to_snake_case() .. '_buff_bar'
 end
 
 function mod.find_index_by_value(arrayTbl, matchValue)

@@ -70,7 +70,7 @@ local function draw_buff_bars_inputs(buff_bars)
 end
 
 local function draw_buff(buff_bar_name, buff_name, buff)
-    local buff_bar_id = mod.string_to_id(buff_bar_name)
+    local buff_bar_id = buff_bar_name:to_snake_case()
 
     Imgui.begin_child_window(buff_name .. '_' .. buff_bar_id .. '_child_window', BUFF_WINDOW_SIZE[1], BUFF_WINDOW_SIZE[2], false)
 
@@ -161,7 +161,7 @@ BuffBuffBarsComponent.draw = function(buffs)
     end
 
 
-    if add_buff_bar and not mod.string_is_null_or_whitespace(BuffBuffBarsComponent.add_buff_bar_name) then
+    if add_buff_bar and not string.is_null_or_whitespace(BuffBuffBarsComponent.add_buff_bar_name) then
         local new_buff_bar = {
             name = BuffBuffBarsComponent.add_buff_bar_name,
             edit = false,
