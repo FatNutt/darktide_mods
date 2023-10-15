@@ -1,5 +1,4 @@
 local mod = get_mod('BetterBuffManagement')
-mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/helpers/debug') -- TODO: REMOVE ME
 mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/ui/helpers/combo')
 
 local BuffModData = mod:io_dofile('BetterBuffManagement/scripts/mods/BetterBuffManagement/models/buff_mod_data')
