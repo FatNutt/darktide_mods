@@ -179,6 +179,8 @@ BuffBuffBarsComponent.draw = function(buffs)
     if is_dirty then
         mod:set(BUFF_BARS_SETTING_ID, buff_bars)
     end
+
+    return is_dirty
 end
 
 return BuffBuffBarsComponent

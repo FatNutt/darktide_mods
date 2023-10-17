@@ -182,17 +182,19 @@ function BetterBuffManagementWindow:update()
 
         Imgui.draw_custom_separator()
 
-        BuffGroupingsComponent.draw(self._buffs)
+        local are_groupings_dirty = BuffGroupingsComponent.draw(self._buffs)
 
         Imgui.draw_custom_separator()
 
-        BuffBarsComponent.draw(self._buffs)
+        local are_buff_bars_dirty = BuffBarsComponent.draw(self._buffs)
 
         Imgui.draw_custom_separator()
 
         BuffSearchComponent.draw(self._buffs)
 
         Imgui.end_window()
+
+        return are_groupings_dirty, are_buff_bars_dirty
     end
 end
 

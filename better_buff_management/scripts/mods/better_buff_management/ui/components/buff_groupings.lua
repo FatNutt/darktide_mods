@@ -267,6 +267,8 @@ BuffGroupingsComponent.draw = function(buffs)
 
         mod:set(GROUPINGS_SETTING_ID, groupings)
     end
+
+    return is_dirty
 end
 
 return BuffGroupingsComponent

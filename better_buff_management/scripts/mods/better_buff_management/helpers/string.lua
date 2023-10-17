@@ -24,7 +24,7 @@ function string.to_pascal_case(self, delimiter)
 
     local words = {}
     for word in self:gmatch('([^' .. delimiter .. ']+)') do
-        words:insert(word)
+        table.insert(words, word)
     end
 
     local retVal = ''
