@@ -1,0 +1,11 @@
+{
+    "Lua.diagnostics.globals": [
+        "get_mod",
+        "Managers",
+        "Color",
+        "settings",
+        "class",
+        "Imgui",
+        "Mods"
+    ]
+}

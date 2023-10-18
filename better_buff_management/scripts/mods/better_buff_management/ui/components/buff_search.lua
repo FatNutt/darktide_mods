@@ -118,7 +118,7 @@ local function draw_buffs(buffs)
             Imgui.same_line()
         end
 
-        if buff.template and should_display_buff(buff_name, search) then
+        if buff.template and should_display_buff(buff_name) then
             draw_buff(buff_name, buff)
         end
 
@@ -147,7 +147,7 @@ end
 local function toggle_hidden_for_visible_buffs(buffs, flag)
     local search = BuffSearchComponent.search
     for buff_name, buff in pairs(buffs) do    
-        if should_display_buff(buff_name, search) then
+        if should_display_buff(buff_name) then
             buff.data.is_hidden = flag
         end
     end
@@ -156,7 +156,7 @@ end
 local function toggle_selected_for_visible_buffs(buffs, flag)
     local search = BuffSearchComponent.search
     for buff_name, buff in pairs(buffs) do    
-        if should_display_buff(buff_name, search) then
+        if should_display_buff(buff_name) then
             buff.data:get_search_item():toggle_selected(flag)
         end
     end

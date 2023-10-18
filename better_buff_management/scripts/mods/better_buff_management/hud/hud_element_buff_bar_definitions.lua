@@ -5,9 +5,9 @@ local BUFF_SIZE = { 38, 38 }
 
 local HudElementBuffBarDefinitions = table.clone(HudElementPlayerBuffsDefinitions)
 
-HudElementBuffBarDefinitions.scenegraph_definition.background.size = BUFF_SIZE
-HudElementBuffBarDefinitions.scenegraph_definition.buff.size = BUFF_SIZE
+-- HudElementBuffBarDefinitions.scenegraph_definition.background.size = BUFF_SIZE
+-- HudElementBuffBarDefinitions.scenegraph_definition.buff.size = BUFF_SIZE
 
-HudElementBuffBarDefinitions.buff_widget_definition.style.size = BUFF_SIZE
+-- HudElementBuffBarDefinitions.buff_widget_definition.style.size = BUFF_SIZE
 
 return HudElementBuffBarDefinitions

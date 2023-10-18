@@ -1,26 +1,73 @@
--- local mod = get_mod('better_buff_management')
+local dmf = get_mod('DMF')
 
--- local _fake_requires = {}
--- function mod:add_fake_require_path(path, fake_value)
---     _fake_requires[path] = fake_value
--- end
+local _io = dmf:persistent_table('_io')
+_io.initialized = _io.initialized or false
+if not _io.initialized then
+  _io = dmf.deepcopy(Mods.lua.io)
+end
 
--- function mod:remove_fake_require_path(path)
---     _fake_requires[path] = nil
--- end
+local mod = get_mod('better_buff_management')
 
--- mod:hook(_G, "require", function (func, path, ...)
---     if _fake_requires[path] then
---       return _fake_requires[path]
---     else
---       local result = func(path, ...)
-  
---       -- Apply any file hooks to the newly-required file
---       local require_store = get_require_store(path)
---       if require_store then
---         dmf.apply_hooks_to_file(require_store, path, #require_store)
---       end
-  
---       return result
---     end
--- end)
+-- Local backup of the loadstring function
+local _loadstring = Mods.lua.loadstring
+
+local BUFF_BAR_FILE_PATH = 'better_buff_management/scripts/mods/better_buff_management/hud/hud_element_buff_bar.lua'
+local HUD_ELEMENT_FILE_PATH = './../mods/' .. BUFF_BAR_FILE_PATH
+
+local _fake_buff_bar_requires = {}
+
+local function get_fake_class_name(fake_path)
+    local fake_path_parts = fake_path.split('/')
+    local raw_class_name = fake_path_parts[#fake_path_parts]
+    local buff_bar_name = raw_class_name:gsub('hud_element_buff_bar', ''):to_pascal_case('_')
+    local fake_class_name = 'HudElementBuffBar_' .. buff_bar_name
+    return fake_class_name
+end
+
+local function buff_bar_require(fake_buff_bar_path)
+    -- Check for the existence of the path
+    local ff, err_io = _io.open(HUD_ELEMENT_FILE_PATH, 'r')
+    if ff == nil then
+        mod:error('[BetterBuffManagement]Error opening ' .. BUFF_BAR_FILE_PATH .. ': ' .. tostring(err_io))
+        return false
+    end
+    ff:close()
+
+    local fake_class_name = get_fake_class_name(fake_buff_bar_path)
+    local fake_file_path = fake_buff_bar_path.. '.lua'
+
+    -- Make this a safe call
+    local status, result = pcall(function ()
+        local f = _io.open(HUD_ELEMENT_FILE_PATH, 'r')
+        local result = f:read('*all')
+
+        result = result:gsub('class(\'HudElementBuffBar\'', 'class(\'' .. fake_class_name .. '\'')
+
+        local func = _loadstring(result, fake_file_path)
+        return func()
+    end)
+
+    -- If status is failed, notify the user and return false
+    if not status then
+        mod:error('[BetterBuffManagement]Error processing ' .. fake_file_path .. ': ' .. tostring(result))
+        return false
+    end
+
+    return result
+end
+
+function mod:add_fake_buff_bar_require_path(fake_buff_bar_path)
+    _fake_buff_bar_requires[fake_buff_bar_path] = true
+end
+
+function mod:clear_fake_buff_bar_require_paths()
+    _fake_buff_bar_requires = {}
+end
+
+mod:hook(_G, 'require', function (func, path, ...)
+    if _fake_buff_bar_requires[path] then
+        return buff_bar_require(path)
+    end
+
+    return func(path, ...)
+end)

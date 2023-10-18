@@ -32,7 +32,7 @@ function BuffModData:init(params)
     self.display_name = params.display_name
 
     if string.is_null_or_whitespace(self.display_name) then
-        self.display_name = name
+        self.display_name = params.name
     end
 
     self.is_hidden = params.is_hidden or false
