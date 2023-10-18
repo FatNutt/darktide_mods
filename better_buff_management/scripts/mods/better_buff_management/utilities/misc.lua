@@ -1,5 +1,5 @@
 local mod = get_mod('better_buff_management')
-mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/helpers/string')
+mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/string')
 
 function mod.name_to_grouping_id(name)
     return name:to_snake_case() .. '_grouping'

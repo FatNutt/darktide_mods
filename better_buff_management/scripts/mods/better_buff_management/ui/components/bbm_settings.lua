@@ -1,5 +1,5 @@
 local mod = get_mod('better_buff_management')
-mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/helpers/misc')
+mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/misc')
 
 -- -------------------------------
 -- ---------- Constants ----------

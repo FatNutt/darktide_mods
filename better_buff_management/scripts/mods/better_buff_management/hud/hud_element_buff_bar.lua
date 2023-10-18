@@ -9,10 +9,8 @@ local BUFF_BARS_SETTING_ID = 'bbm_buff_bars'
 -- --------- Constructor ---------
 -- -------------------------------
 local HudElementBuffBar = class('HudElementBuffBar', 'HudElementPlayerBuffs')
-function HudElementBuffBar:init(parent, draw_layer, start_scale, buff_bar_name)
+function HudElementBuffBar:init(parent, draw_layer, start_scale)
     HudElementBuffBar.super.init(self, parent, draw_layer, start_scale, BuffBarDefinitions)
-
-    self._buff_bar_name = buff_bar_name
 end
 
 -- -------------------------------
