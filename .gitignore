@@ -1,3 +1,10 @@
+# Visual Studio Code
+.vscode/*
+# Local History for Visual Studio Code
+.history/
+# Built Visual Studio Code Extensions
+*.vsixs
+
 # Compiled Lua sources
 luac.out
 
