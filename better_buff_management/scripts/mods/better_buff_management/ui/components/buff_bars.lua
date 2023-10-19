@@ -10,8 +10,6 @@ local BUFF_BARS_SETTING_ID = 'bbm_buff_bars'
 local CREATE_BUFF_BAR_BUTTON_LOC_ID = 'create_buff_bar_button'
 local DELETE_BUFF_BAR_BUTTON_LOC_ID = 'delete_buff_bar_button'
 local REMOVE_BUFF_FROM_BUFF_BAR_LOC_ID = 'remove_buff_from_buff_bar'
-local BUFF_BAR_NAME_LOC_ID = 'buff_bar_name'
-local ADD_BUFF_BAR_LOC_ID = 'add_buff_bar'
 
 local BUFF_BAR_WINDOW_SIZE = { 0, 125 }
 local BUFF_WINDOW_SIZE = { 75, 100 }
@@ -46,12 +44,13 @@ end
 local function draw_buff_bars_inputs(buff_bars)
     local dirty = false
 
-    local add_group = draw_add_buff_bar()
-    local delete_group = draw_delete_buff_bar(buff_bars)
+    -- @TODO: Add back when dynamic hud creation is possible
+    -- local add_group = draw_add_buff_bar()
+    -- local delete_group = draw_delete_buff_bar(buff_bars)
 
-    if add_group or delete_group then
-        dirty = true
-    end
+    -- if add_group or delete_group then
+    --     dirty = true
+    -- end
 
     for index, buff_bar in ipairs(buff_bars) do
         if index > 1 then
@@ -66,7 +65,7 @@ local function draw_buff_bars_inputs(buff_bars)
         end
     end
 
-    return dirty, add_group, delete_group
+    return dirty, nil, nil -- add_group, delete_group @TODO: Add back when dynamic hud creation is possible
 end
 
 local function draw_buff(buff_bar_name, buff_name, buff)
@@ -149,7 +148,6 @@ BuffBuffBarsComponent.draw = function(buffs)
 
 
     local is_dirty, add_buff_bar, delete_buff_bar = draw_buff_bars_inputs(buff_bars)
-
     for _, buff_bar in ipairs(buff_bars) do
         if buff_bar.edit then
             local buff_bar_is_dirty = draw_buff_bar(buff_bar, buffs)

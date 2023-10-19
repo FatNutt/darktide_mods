@@ -25,10 +25,6 @@ local GROUPINGS_SETTING_ID = 'bbm_groupings'
 -- ------- Local Functions -------
 -- -------------------------------
 
-local function get_widget_by_setting_id(widgets, setting_id_value)
-    return mod.find_table_by_key_value_pair(widgets, 'setting_id', setting_id_value)
-end
-
 local function get_icon(buff_template, cached_items)
     if buff_template.hide_icon_in_hud then
         return nil

@@ -8,7 +8,7 @@ local BUFF_BARS_SETTING_ID = 'bbm_buff_bars'
 -- -------------------------------
 -- --------- Constructor ---------
 -- -------------------------------
-local HudElementBuffBar01 = class('HudElementBuffBar0101', 'HudElementBuffBar')
+local HudElementBuffBar01 = class('HudElementBuffBar01', 'HudElementBuffBar')
 function HudElementBuffBar01:init(parent, draw_layer, start_scale)
     HudElementBuffBar01.super.init(self, parent, draw_layer, start_scale)
 end

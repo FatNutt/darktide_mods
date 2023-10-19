@@ -2,6 +2,7 @@
 -- ---------- Constants ----------
 -- -------------------------------
 
+local BUFF_BAR_HUD_DIR = 'better_buff_management/scripts/mods/better_buff_management/hud/buff_bars/'
 local BUFF_BAR_FILENAME = 'better_buff_management/scripts/mods/better_buff_management/hud/hud_element_buff_bar'
 local BUFF_BAR_CLASS_NAME = 'HudElementBuffBar'
 
@@ -14,9 +15,12 @@ local BUFF_BARS_SETTING_ID = 'bbm_buff_bars'
 -- -------------------------------
 
 local mod = get_mod('better_buff_management')
+mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/global')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/string')
-mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/mod')
-mod:io_dofile(BUFF_BAR_FILENAME)
+-- mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/mod') @TODO: Maybe add back when dynamic hud creation is possible
+mod:add_require_path('better_buff_management/scripts/mods/better_buff_management/hud/buff_bars/hud_element_buff_bar_1')
+mod:add_require_path('better_buff_management/scripts/mods/better_buff_management/hud/buff_bars/hud_element_buff_bar_2')
+mod:add_require_path('better_buff_management/scripts/mods/better_buff_management/hud/buff_bars/hud_element_buff_bar_3')
 
 local BetterBuffManagementWindow = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/better_buff_management_window')
 
@@ -31,6 +35,26 @@ local configure_window = BetterBuffManagementWindow:new()
 -- -------------------------------
 -- ------- Local Functions -------
 -- -------------------------------
+
+local function get_default_buffs()
+    return {
+        {
+            buffs = {},
+            edit = false,
+            name = 'Buff Bar 1'
+        },
+        {
+            buffs = {},
+            edit = false,
+            name = 'Buff Bar 2'
+        },
+        {
+            buffs = {},
+            edit = false,
+            name = 'Buff Bar 3'
+        }
+    }
+end
 
 local function create_buff_bar_class_name(buff_bar_name)
     return BUFF_BAR_CLASS_NAME .. '' .. buff_bar_name:to_pascal_case()
@@ -68,7 +92,23 @@ local function get_hud_element_buff_bar_definitions()
 
     for _, bar in ipairs(buff_bars) do
         if bar.buffs and #bar.buffs > 0 then
-            local definition = create_hud_element_buff_bar_definition(bar.name)
+            -- local definition = create_hud_element_buff_bar_definition(bar.name) @TODO: Add back when dynamic hud creation is possible
+            local grouping_num = ternary(bar.name:ends_with('1'), '1', ternary(bar.name:ends_with('2'), '2', '3'))
+            local bar_class_name = 'HudElementBuffBar0' .. grouping_num
+            local bar_filename = BUFF_BAR_HUD_DIR .. 'hud_element_buff_bar_' .. grouping_num
+            mod:dump({ class_name = bar_class_name, filename = bar_filename })
+            local definition = {
+                package = 'packages/ui/hud/player_buffs/player_buffs',
+                use_retained_mode = true,
+                use_hud_scale = true,
+                class_name = bar_class_name,
+                filename = bar_filename,
+                visibility_groups = {
+                    'dead',
+                    'alive',
+                    'communication_wheel'
+                }
+            }
 
             if definition then
                 table.insert(buff_bar_definitions, definition)
@@ -98,7 +138,7 @@ local function add_definitions_to_elements(buff_bar_definitions, elements)
     for _, definition in ipairs(buff_bar_definitions) do
         ---@diagnostic disable-next-line: undefined-field
         if not table.find_by_key(elements, 'class_name', definition.class_name) then
-            mod:add_fake_buff_bar_require_path(definition.filename)
+            -- mod:add_fake_buff_bar_require_path(definition.filename) @TODO: Maybe add back when dynamic hud creation is possible
             table.insert(elements, definition)
         end
     end
@@ -144,14 +184,14 @@ mod.update = function()
     
     local buff_bars = mod:get(BUFF_BARS_SETTING_ID)
     if buff_bars == nil then
-        mod:set(BUFF_BARS_SETTING_ID, {})
+        mod:set(BUFF_BARS_SETTING_ID, get_default_buffs())
     end
 
     if configure_window and configure_window._is_open then
         local are_groupings_dirty, are_buff_bars_dirty = configure_window:update()
 
         if are_groupings_dirty or are_buff_bars_dirty then
-
+            recreate_hud() 
         end
     end
 end
@@ -173,8 +213,8 @@ mod:hook('UIManager', 'using_input', function(func, ...)
 end)
 
 mod:hook('UIHud', 'init', function(func, self, elements, visibility_groups, params)
-    remove_buff_bars_from_elements(elements)
-    mod:clear_fake_buff_bar_require_paths()
+    --remove_buff_bars_from_elements(elements)
+    --mod:clear_fake_buff_bar_require_paths()
 
     local buff_bar_definitions = get_hud_element_buff_bar_definitions()
     if buff_bar_definitions then
