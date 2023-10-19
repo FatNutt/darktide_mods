@@ -41,9 +41,7 @@ local function buff_bar_require(fake_buff_bar_path)
         local f = _io.open(HUD_ELEMENT_FILE_PATH, 'r')
         local result = f:read('*all')
 
-        mod:dump({ find = 'HudElementBuffBar', replace = fake_class_name })
         result = result:gsub('HudElementBuffBar', fake_class_name)
-        mod:dump({ result })
 
         local func = _loadstring(result, fake_file_path)
         local retVal = func()

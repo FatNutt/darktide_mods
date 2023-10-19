@@ -96,7 +96,6 @@ local function get_hud_element_buff_bar_definitions()
             local grouping_num = ternary(bar.name:ends_with('1'), '1', ternary(bar.name:ends_with('2'), '2', '3'))
             local bar_class_name = 'HudElementBuffBar0' .. grouping_num
             local bar_filename = BUFF_BAR_HUD_DIR .. 'hud_element_buff_bar_' .. grouping_num
-            mod:dump({ class_name = bar_class_name, filename = bar_filename })
             local definition = {
                 package = 'packages/ui/hud/player_buffs/player_buffs',
                 use_retained_mode = true,
@@ -191,7 +190,8 @@ mod.update = function()
         local are_groupings_dirty, are_buff_bars_dirty = configure_window:update()
 
         if are_groupings_dirty or are_buff_bars_dirty then
-            recreate_hud() 
+            mod:dump({ groupings_dirty = are_groupings_dirty, buff_bars_dirty = are_buff_bars_dirty })
+            recreate_hud()
         end
     end
 end
@@ -213,7 +213,7 @@ mod:hook('UIManager', 'using_input', function(func, ...)
 end)
 
 mod:hook('UIHud', 'init', function(func, self, elements, visibility_groups, params)
-    --remove_buff_bars_from_elements(elements)
+    remove_buff_bars_from_elements(elements)
     --mod:clear_fake_buff_bar_require_paths()
 
     local buff_bar_definitions = get_hud_element_buff_bar_definitions()
