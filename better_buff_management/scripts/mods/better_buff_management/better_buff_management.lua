@@ -124,6 +124,7 @@ local function remove_buff_bars_from_elements(elements)
     end
 
     repeat
+---@diagnostic disable-next-line: undefined-field
         local index = table.index_of_condition(elements, is_buff_bar_element)
 
         if index > 0 then
@@ -190,7 +191,6 @@ mod.update = function()
         local are_groupings_dirty, are_buff_bars_dirty = configure_window:update()
 
         if are_groupings_dirty or are_buff_bars_dirty then
-            mod:dump({ groupings_dirty = are_groupings_dirty, buff_bars_dirty = are_buff_bars_dirty })
             recreate_hud()
         end
     end

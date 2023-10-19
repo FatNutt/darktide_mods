@@ -20,12 +20,12 @@ local function draw_add_buff_direction_combo(widget)
     local setting_value = mod:get(ADD_BUFF_DIRECTION_SETTING_ID)
     local selected_item = mod.find_table_by_key_value_pair(items, 'value', setting_value)
 
-    if Imgui.begin_combo(mod:localize(widget.setting_id), selected_item.text) then
+    if Imgui.begin_combo(mod:localize(widget.setting_id), mod:localize(selected_item.text)) then
 
-        for index, item in ipairs(items) do
+        for _, item in ipairs(items) do
             local is_selected = item.value == selected_item.value
 
-            if Imgui.selectable(item.text, is_selected) then
+            if Imgui.selectable(mod:localize(item.text), is_selected) then
                 mod:set(ADD_BUFF_DIRECTION_SETTING_ID, item.value)
             end
 

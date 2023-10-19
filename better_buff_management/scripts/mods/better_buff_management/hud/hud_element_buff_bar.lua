@@ -25,8 +25,6 @@ function HudElementBuffBar:init(parent, draw_layer, start_scale, buff_bar_num)
     end
 
     HudElementBuffBar.super.init(self, parent, draw_layer, start_scale, BuffBarDefinitions)
-
-    mod:dump({ self._player._profile }, '', 2)
 end
 
 -- -------------------------------
@@ -45,6 +43,7 @@ end
 -- -------------------------------
 
 function HudElementBuffBar:_should_display_buff(buff_name)
+---@diagnostic disable-next-line: undefined-field
     return self._filter and #self._filter > 0 and table.contains(self._filter, buff_name)
 end
 
@@ -53,6 +52,7 @@ function HudElementBuffBar:_sync_current_active_buffs(buffs)
         return
     end
 
+---@diagnostic disable-next-line: undefined-field
     buffs = table.filter(buffs, function(buff)
         return self:_should_display_buff(buff._template_name)
     end)
@@ -62,12 +62,14 @@ end
 function HudElementBuffBar:_get_filter(buff_bar_num)
     if buff_bar_num then
         local buff_bars = mod:get(BUFF_BARS_SETTING_ID)
+---@diagnostic disable-next-line: undefined-field
         if buff_bars and table.size(buff_bars) > 0 and buff_bars[buff_bar_num] then
             local filter = buff_bars[buff_bar_num].buffs
 
             local mod_data = mod:get(BUFF_MOD_DATA_SETTING_ID)
             if mod_data then
                 for i = #filter, 1, -1 do
+---@diagnostic disable-next-line: undefined-field
                     local index = table.index_of_condition(mod_data, function (data)
                         return data.name == filter[i] and data.is_hidden
                     end)
