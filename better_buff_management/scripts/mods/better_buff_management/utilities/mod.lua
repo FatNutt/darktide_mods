@@ -17,10 +17,10 @@ local HUD_ELEMENT_FILE_PATH = './../mods/' .. BUFF_BAR_FILE_PATH
 local _fake_buff_bar_requires = {}
 
 local function get_fake_class_name(fake_path)
-    local fake_path_parts = fake_path.split('/')
+    local fake_path_parts = fake_path:split('/')
     local raw_class_name = fake_path_parts[#fake_path_parts]
-    local buff_bar_name = raw_class_name:gsub('hud_element_buff_bar', ''):to_pascal_case('_')
-    local fake_class_name = 'HudElementBuffBar_' .. buff_bar_name
+    local buff_bar_name = raw_class_name:gsub('hud_element_buff_bar_', ''):to_pascal_case('_')
+    local fake_class_name = 'HudElementBuffBar' .. buff_bar_name
     return fake_class_name
 end
 
@@ -41,10 +41,13 @@ local function buff_bar_require(fake_buff_bar_path)
         local f = _io.open(HUD_ELEMENT_FILE_PATH, 'r')
         local result = f:read('*all')
 
-        result = result:gsub('class(\'HudElementBuffBar\'', 'class(\'' .. fake_class_name .. '\'')
+        mod:dump({ find = 'HudElementBuffBar', replace = fake_class_name })
+        result = result:gsub('HudElementBuffBar', fake_class_name)
+        mod:dump({ result })
 
         local func = _loadstring(result, fake_file_path)
-        return func()
+        local retVal = func()
+        return retVal
     end)
 
     -- If status is failed, notify the user and return false

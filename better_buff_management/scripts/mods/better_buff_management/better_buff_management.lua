@@ -33,10 +33,10 @@ local configure_window = BetterBuffManagementWindow:new()
 -- -------------------------------
 
 local function create_buff_bar_class_name(buff_bar_name)
-    return BUFF_BAR_CLASS_NAME .. '_'.. buff_bar_name:to_pascal_case()
+    return BUFF_BAR_CLASS_NAME .. '' .. buff_bar_name:to_pascal_case()
 end
 
-local function create_buff_bar_function_name(buff_bar_name)
+local function create_buff_bar_file_name(buff_bar_name)
     return BUFF_BAR_FILENAME .. '_' .. buff_bar_name:to_snake_case()
 end
 
@@ -46,7 +46,7 @@ local function create_hud_element_buff_bar_definition(buff_bar_name)
     end
 
     local buff_bar_class_name = create_buff_bar_class_name(buff_bar_name)
-    local buff_bar_file_name = create_buff_bar_function_name(buff_bar_name)
+    local buff_bar_file_name = create_buff_bar_file_name(buff_bar_name)
 
     return {
         package = 'packages/ui/hud/player_buffs/player_buffs',
@@ -79,21 +79,30 @@ local function get_hud_element_buff_bar_definitions()
     return buff_bar_definitions
 end
 
--- local function remove_buff_bars_from_elements(elements)
---     local buff_bars = mod:get(BUFF_BARS_SETTING_ID)
---     if buff_bars then
---         for _, bar in ipairs(buff_bars) do
---             local class_name = create_buff_bar_class_name(bar.name)
---             local index = table.index_of_condition(elements, function(element)
---                 return element and element.class_name:starts_with(BUFF_BAR_CLASS_NAME)
---             end)
+local function remove_buff_bars_from_elements(elements)
+    local function is_buff_bar_element(element)
+        return element and element.class_name:starts_with(BUFF_BAR_CLASS_NAME)
+    end
 
---             if index then
---                 table.remove(elements, index)
---             end
---         end
---     end
--- end
+    repeat
+        local index = table.index_of_condition(elements, is_buff_bar_element)
+
+        if index > 0 then
+            table.remove(elements, index)
+        end
+
+    until index == -1
+end
+
+local function add_definitions_to_elements(buff_bar_definitions, elements)
+    for _, definition in ipairs(buff_bar_definitions) do
+        ---@diagnostic disable-next-line: undefined-field
+        if not table.find_by_key(elements, 'class_name', definition.class_name) then
+            mod:add_fake_buff_bar_require_path(definition.filename)
+            table.insert(elements, definition)
+        end
+    end
+end
 
 local function recreate_hud()
     local ui_manager = Managers.ui
@@ -108,23 +117,12 @@ local function recreate_hud()
             local elements = hud._element_definitions
             local visibility_groups = hud._visibility_groups
 
-            -- remove_buff_bars_from_elements(elements)
-
             ui_manager:destroy_player_hud()
             ui_manager:create_player_hud(peer_id, local_player_id, elements, visibility_groups)
         end
     end
 end
 
-local function add_definitions_to_elements(buff_bar_definitions, elements)
-    for _, definition in ipairs(buff_bar_definitions) do
-        ---@diagnostic disable-next-line: undefined-field
-        if not table.find_by_key(elements, 'class_name', definition.class_name) then
-            mod:add_fake_buff_bar_require_path(definition.filename)
-            table.insert(elements, definition)
-        end
-    end
-end
 
 -- -------------------------------
 -- -------- Mod Functions --------
@@ -153,8 +151,7 @@ mod.update = function()
         local are_groupings_dirty, are_buff_bars_dirty = configure_window:update()
 
         if are_groupings_dirty or are_buff_bars_dirty then
-            get_hud_element_buff_bar_definitions()
-            recreate_hud()
+
         end
     end
 end
@@ -176,9 +173,11 @@ mod:hook('UIManager', 'using_input', function(func, ...)
 end)
 
 mod:hook('UIHud', 'init', function(func, self, elements, visibility_groups, params)
+    remove_buff_bars_from_elements(elements)
+    mod:clear_fake_buff_bar_require_paths()
+
     local buff_bar_definitions = get_hud_element_buff_bar_definitions()
     if buff_bar_definitions then
-        mod:clear_fake_buff_bar_require_paths()
         add_definitions_to_elements(buff_bar_definitions, elements)
     end
 
