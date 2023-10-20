@@ -2,7 +2,6 @@
 
 ## Todo
 - Hide buffs from bars
-- Actually use groupings
 - Add setting to toggle default buff bar display
 - Add setting to toggle buff bar buffs from displaying in default buff bar
 - Fix size of hud elements
