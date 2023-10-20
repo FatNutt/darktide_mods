@@ -16,7 +16,4 @@
 - Move grouping and buff_bar tracking to mod_data?
 
 ## Comments / Bugs
-- Hitting 'Add selected buffs to bar' errors out if nothing is selected
 - Add delete all buffs buff for buff bars / groupings
-- Make config window resizable
-- Disable config window in hub (only psychanium or in game)

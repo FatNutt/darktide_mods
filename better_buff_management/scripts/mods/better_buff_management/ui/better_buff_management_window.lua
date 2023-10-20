@@ -175,9 +175,14 @@ function BetterBuffManagementWindow:close()
     Imgui.close_imgui()
 end
 
+local first_open = true
 function BetterBuffManagementWindow:update()
     if self._is_open then
-        local _, closed = Imgui.begin_window(mod:localize('mod_name'), 'always_auto_resize')
+        if first_open then
+            first_open = false
+            Imgui.set_next_window_size(800, 500)
+        end
+        local _, closed = Imgui.begin_window(mod:localize('mod_name'))
         if closed then
             self:close()
         end
@@ -187,9 +192,9 @@ function BetterBuffManagementWindow:update()
 
         Imgui.draw_custom_separator()
 
-        local are_groupings_dirty = BuffGroupingsComponent.draw(self._buffs)
+        -- local are_groupings_dirty = BuffGroupingsComponent.draw(self._buffs)
 
-        Imgui.draw_custom_separator()
+        -- Imgui.draw_custom_separator()
 
         local are_buff_bars_dirty = BuffBarsComponent.draw(self._buffs)
 
@@ -198,8 +203,6 @@ function BetterBuffManagementWindow:update()
         BuffSearchComponent.draw(self._buffs)
 
         Imgui.end_window()
-
-        return are_groupings_dirty, are_buff_bars_dirty
     end
 end
 
