@@ -13,3 +13,12 @@
 - Add extension function UIManager for recreating hud
 - Sort options for buffs (Alphanumeric)
 - Move grouping and buff_bar tracking to mod_data?
+
+## Comments / Bugs
+- Fix buffs displaying
+    - Passive buffs not displaying
+    - Some weapon blessings not showing
+- Hitting 'Add selected buffs to bar' errors out if nothing is selected
+- Add delete all buffs buff for buff bars / groupings
+- Make config window resizable
+- Disable config window in hub (only psychanium or in game)

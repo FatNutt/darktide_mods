@@ -17,7 +17,7 @@ local BUFF_BARS_SETTING_ID = 'bbm_buff_bars'
 local mod = get_mod('better_buff_management')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/global')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/string')
--- mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/mod') @TODO: Maybe add back when dynamic hud creation is possible
+mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/mod')
 mod:add_require_path('better_buff_management/scripts/mods/better_buff_management/hud/buff_bars/hud_element_buff_bar_1')
 mod:add_require_path('better_buff_management/scripts/mods/better_buff_management/hud/buff_bars/hud_element_buff_bar_2')
 mod:add_require_path('better_buff_management/scripts/mods/better_buff_management/hud/buff_bars/hud_element_buff_bar_3')
@@ -171,6 +171,7 @@ end
 mod.configure_buffs = function()
     if configure_window._is_open then
         configure_window:close()
+        recreate_hud()
     else
         configure_window:open()
     end
@@ -185,14 +186,6 @@ mod.update = function()
     local buff_bars = mod:get(BUFF_BARS_SETTING_ID)
     if buff_bars == nil then
         mod:set(BUFF_BARS_SETTING_ID, get_default_buffs())
-    end
-
-    if configure_window and configure_window._is_open then
-        local are_groupings_dirty, are_buff_bars_dirty = configure_window:update()
-
-        if are_groupings_dirty or are_buff_bars_dirty then
-            recreate_hud()
-        end
     end
 end
 

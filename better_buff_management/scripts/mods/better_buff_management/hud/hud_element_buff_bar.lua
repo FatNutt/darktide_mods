@@ -10,11 +10,6 @@ local BUFF_MOD_DATA_SETTING_ID = 'bbm_buff_mod_data'
 -- ------- Local Functions -------
 -- -------------------------------
 
-local function _is_in_hub()
-    local game_mode_name = Managers.state.game_mode:game_mode_name()
-    return game_mode_name == 'hub' or game_mode_name == 'prologue_hub'
-end
-
 -- -------------------------------
 -- --------- Constructor ---------
 -- -------------------------------
@@ -93,7 +88,7 @@ end
 -- -------------------------------
   
 function HudElementBuffBar:draw(dt, t, ui_renderer, render_settings, input_service)
-    if _is_in_hub() then
+    if mod:is_in_hub() then
         return
     end
 
