@@ -172,7 +172,7 @@ mod.configure_buffs = function()
     if configure_window._is_open then
         configure_window:close()
         recreate_hud()
-    else
+    elseif not mod:is_in_hub() then
         configure_window:open()
     end
 end

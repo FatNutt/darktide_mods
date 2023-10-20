@@ -65,10 +65,16 @@ function mod:clear_fake_buff_bar_require_paths()
     _fake_buff_bar_requires = {}
 end
 
-mod:hook(_G, 'require', function (func, path, ...)
-    if _fake_buff_bar_requires[path] then
-        return buff_bar_require(path)
-    end
+function mod:is_in_hub()
+    local game_mode_name = Managers.state.game_mode:game_mode_name()
+    return game_mode_name == 'hub' or game_mode_name == 'prologue_hub'
+end
 
-    return func(path, ...)
-end)
+-- @TODO: Maybe add back when dynamic hud creation is possible
+-- mod:hook(_G, 'require', function (func, path, ...)
+--     if _fake_buff_bar_requires[path] then
+--         return buff_bar_require(path)
+--     end
+
+--     return func(path, ...)
+-- end)
