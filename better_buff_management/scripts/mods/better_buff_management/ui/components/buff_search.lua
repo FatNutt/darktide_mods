@@ -1,4 +1,5 @@
 local mod = get_mod('better_buff_management')
+mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/string')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/misc')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/helpers/combo')
 
@@ -72,6 +73,7 @@ local function draw_inputs()
     BuffSearchComponent.select_all = Imgui.small_button(mod:localize(SELECT_VISIBLE_ICONS_LOC_ID))
 
     BuffSearchComponent.search = Imgui.input_text(mod:localize(SEARCH_LOC_ID), BuffSearchComponent.search)
+    BuffSearchComponent.search = BuffSearchComponent.search:sanitize('[^%w_]+')
     Imgui.same_line()
     if Imgui.button(mod:localize(CLEAR_SEARCH_LOC_ID)) then
         BuffSearchComponent.search = ''

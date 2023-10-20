@@ -34,3 +34,7 @@ function string.to_pascal_case(self, delimiter)
 
     return retVal
 end
+
+function string.sanitize(self, pattern)
+    return self:gsub(pattern, '')
+end

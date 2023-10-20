@@ -169,10 +169,12 @@ end
 -- -------------------------------
 
 mod.configure_buffs = function()
+    mod:dump({Managers.state.game_mode:game_mode_name()})
     if configure_window._is_open then
         configure_window:close()
         recreate_hud()
     elseif not mod:is_in_hub() then
+        recreate_hud()
         configure_window:open()
     end
 end
@@ -187,6 +189,8 @@ mod.update = function()
     if buff_bars == nil then
         mod:set(BUFF_BARS_SETTING_ID, get_default_buffs())
     end
+
+    configure_window:update()
 end
 
 -- -------------------------------

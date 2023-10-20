@@ -40,6 +40,11 @@ local function get_icon(buff_template, cached_items)
         buff_name = buff_name:gsub('_parent', '')
     end
 
+    local parent = table.find_by_key(BUFF_TEMPLATES, 'child_buff_template', buff_name)
+    if parent then
+        return BUFF_TEMPLATES[parent].hud_icon
+    end
+
     for _, item in pairs(cached_items) do
         if item.trait == buff_name then
             if item.icon and item.icon ~= '' then
@@ -91,6 +96,23 @@ function BetterBuffManagementWindow:_load_grouping_buff_data()
     end
 end
 
+function BetterBuffManagementWindow:_load_all_buff_templates()
+    local cached_items = MASTER_ITEMS.get_cached()
+
+    for _, buff_template in pairs(BUFF_TEMPLATES) do
+        local hud_icon = get_icon(buff_template, cached_items)
+        if hud_icon then
+            buff_template.cached_icon = hud_icon
+
+            if not self._buffs[buff_template.name] then
+                self._buffs[buff_template.name] = { template = nil, data = BuffModData:new({ name = buff_template.name })}
+            end
+
+            self._buffs[buff_template.name].template = buff_template
+        end
+    end
+end
+
 function BetterBuffManagementWindow:_load_all_bbm_buff_data()
     self._buffs = {}
 
@@ -133,20 +155,7 @@ function BetterBuffManagementWindow:open()
 
     self:_load_all_bbm_buff_data()
 
-    local cached_items = MASTER_ITEMS.get_cached()
-
-    for _, buff_template in pairs(BUFF_TEMPLATES) do
-        local hud_icon = get_icon(buff_template, cached_items)
-        if hud_icon then
-            buff_template.cached_icon = hud_icon
-
-            if not self._buffs[buff_template.name] then
-                self._buffs[buff_template.name] = { template = nil, data = BuffModData:new({ name = buff_template.name })}
-            end
-
-            self._buffs[buff_template.name].template = buff_template
-        end
-    end
+    self:_load_all_buff_templates()
 
     self:_load_grouping_buff_data()
 
