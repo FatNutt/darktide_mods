@@ -169,7 +169,6 @@ end
 -- -------------------------------
 
 mod.configure_buffs = function()
-    mod:dump({Managers.state.game_mode:game_mode_name()})
     if configure_window._is_open then
         configure_window:close()
         recreate_hud()

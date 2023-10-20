@@ -241,7 +241,7 @@ local function update(buffs)
 
     if BuffSearchComponent.add_to_group and BuffSearchComponent.selected_grouping_index > 1 then
         add_selected_to_grouping(buffs)
-    elseif BuffSearchComponent.add_to_buff_bar then
+    elseif BuffSearchComponent.add_to_buff_bar and BuffSearchComponent.selected_buff_bar_index > 1 then
         add_selected_to_buff_bar(buffs)
     end
 
