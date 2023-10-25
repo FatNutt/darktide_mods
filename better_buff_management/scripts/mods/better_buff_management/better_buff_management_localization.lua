@@ -44,17 +44,20 @@ return {
     create_buff_bar_button = {
         en = 'Create buff bar'
     },
+    select_buff_bar_label = {
+        en = 'Select buff bar'
+    },
+    clear_buff_bar_button = {
+        en = 'Clear'
+    },
     delete_buff_bar_button = {
-        en = 'Delete buff bar'
+        en = 'Delete'
     },
     remove_buff_from_buff_bar = {
         en = 'Remove'
     },
     buff_bar_name = {
         en = 'Buff bar name'
-    },
-    add_buff_bar = {
-        en = 'Add buff bar'
     },
     unhide_all_icons = {
         en = 'Unhide all visible icons'

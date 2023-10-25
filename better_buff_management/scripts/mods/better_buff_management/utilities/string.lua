@@ -2,12 +2,12 @@ function string.capitalize(self)
     return self:sub(1,1):upper() .. self:sub(2):lower()
 end
 
-function string.is_null_or_whitespace(self)
-    if self == nil then
-        return true
-    end
+function string.is_whitespace(self)
+    return string.match(self, '^%s*$') ~= nil
+end
 
-    return self:match('^%s*$') ~= nil
+function string.is_nil_or_whitespace(self)
+    return self == nil or string.is_whitespace(self)
 end
 
 function string.to_snake_case(self)
@@ -18,7 +18,7 @@ function string.to_snake_case(self)
 end
 
 function string.to_pascal_case(self, delimiter)
-    if string.is_null_or_whitespace(delimiter) then
+    if string.is_nil_or_whitespace(delimiter) then
         delimiter = ' '
     end
 
