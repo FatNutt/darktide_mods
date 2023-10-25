@@ -8,7 +8,7 @@ local BuffData = mod:io_dofile('better_buff_management/scripts/mods/better_buff_
 
 local SettingsComponent = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/components/settings_component')
 local BuffBarsComponent = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/components/buff_bars_component')
--- local BuffSearchComponent = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/components/buff_search')
+local SearchComponent = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/components/search_component')
 
 local MOD_NAME = mod:localize('mod_name')
 local CLASS_NAME = 'ManagementWindow'
@@ -68,6 +68,7 @@ function ManagementWindow:init()
 
     self._settings_component = nil
     self._buff_bars_component = nil
+    self._search_component = nil
 end
 
 -- -------------------------------
@@ -124,11 +125,13 @@ function ManagementWindow:_create_ui_components()
     local settings_widgets = mod:get_internal_data('options').widgets
     self._settings_component = SettingsComponent:new(settings_widgets)
     self._buff_bars_component = BuffBarsComponent:new(self._buffs_data)
+    self._search_component = SearchComponent:new(self._buffs_data)
 end
 
 function ManagementWindow:_destroy_ui_components()
     self._settings_component = nil
     self._buff_bars_component = nil
+    self._search_component = nil
 end
 
 -- -------------------------------
@@ -175,12 +178,16 @@ function ManagementWindow:update()
         local _, closed = Imgui.begin_window(mod:localize('mod_name'))
         if closed then
             self:close()
-        else
+        else            
             self._settings_component:update()
 
             Imgui.separator()
 
             self._buff_bars_component:update()
+
+            Imgui.separator()
+
+            self._search_component:update()
         end
     end
 end

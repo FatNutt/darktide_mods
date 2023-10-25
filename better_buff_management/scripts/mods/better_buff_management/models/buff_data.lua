@@ -42,7 +42,7 @@ function BuffData:init(params)
     self.name = params.name
     self.icon = params.icon
     self.is_hidden = params.is_hidden or false
-    self.bar_name = nil
+    self.bar_name = params.bar_name
 end
 
 -- -------------------------------

@@ -59,17 +59,11 @@ return {
     buff_bar_name = {
         en = 'Buff bar name'
     },
-    unhide_all_icons = {
-        en = 'Unhide all visible icons'
-    },
-    hide_all_icons = {
-        en = 'Hide all visible icons'
-    },
     unselect_all_icons = {
-        en = 'Deselect all visible icons'
+        en = 'Deselect all'
     },
     select_all_icons = {
-        en = 'Select all visible icons'
+        en = 'Select all'
     },
     search = {
         en = 'Search'

@@ -17,18 +17,6 @@ function table.map(tbl, func)
     return retTbl
 end
 
-function table.unpack_value(tbl, key)
-    local retTbl = {}
-
-    for _, value in pairs(tbl) do
-        if value[key] then
-            table.insert(retTbl, value[key])
-        end
-    end
-
-    return retTbl
-end
-
 function table.to_array(tbl)
     local array_tbl = {}
 
@@ -53,4 +41,17 @@ function table.is_array(tbl)
     end
 
     return true
+end
+
+function table.sorted_by_value(tbl, sort_func)
+    local retTbl = {}
+    for _, value in pairs(tbl) do
+        table.insert(retTbl, value)
+    end
+
+    table.sort(retTbl, function(a, b)
+        return sort_func(a, b)
+    end)
+
+    return retTbl
 end

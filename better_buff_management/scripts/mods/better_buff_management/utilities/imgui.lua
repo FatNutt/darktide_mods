@@ -149,7 +149,9 @@ Imgui.combo = function(...)
         if not table.is_nil_or_empty(combo_items) then
             if add_empty_entry then
                 local is_selected_index_nil = selected_index == nil
-                Imgui.selectable('', is_selected_index_nil)
+                if Imgui.selectable('', is_selected_index_nil) then
+                    selected_index = nil
+                end
     
                 if is_selected_index_nil then
                     Imgui.set_item_default_focus()

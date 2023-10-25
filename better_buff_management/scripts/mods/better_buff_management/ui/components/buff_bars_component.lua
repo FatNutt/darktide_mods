@@ -11,6 +11,7 @@ local ERROR_PREFIX = ('[%s][%s]'):format(MOD_NAME, CLASS_NAME)
 local ERRORS = {
 }
 
+local BARS_SETTING_ID = 'bars'
 local CREATE_BUFF_BAR_BUTTON_LOC_ID = 'create_buff_bar_button'
 local SELECT_BUFF_BAR_LABEL_LOC_ID = 'select_buff_bar_label'
 local CLEAR_BUFF_BAR_BUTTON_LOC_ID = 'clear_buff_bar_button'
@@ -20,19 +21,6 @@ local REMOVE_BUFF_FROM_BUFF_BAR_LOC_ID = 'remove_buff_from_buff_bar'
 -- -------------------------------
 -- ------- Local Functions -------
 -- -------------------------------
-
-local function _init_bars(buffs_data)
-    local bars = {}
-
-    if not table.is_nil_or_empty(buffs_data) then
-        local raw_bars = table.filter(buffs_data, function(data)
-            return data.bar_name
-        end)
-        bars = table.to_array(table.set(raw_bars))
-    end
-
-    return bars
-end
 
 local function _update_buffs(window_id, buffs)
     local same_line_flag = false
@@ -60,6 +48,7 @@ local function _update_buffs(window_id, buffs)
         if remove then
             buff.bar = ''
         end
+        same_line_flag = true
     end
 end
 
@@ -70,7 +59,7 @@ local BuffBarsComponent = class(CLASS_NAME, 'BaseBuffComponent')
 function BuffBarsComponent:init(buffs_data)
     BuffBarsComponent.super.init(self, buffs_data)
 
-    self._bars = _init_bars(buffs_data)
+    self._bars = mod:get(BARS_SETTING_ID)
     self._new_bar_name = ''
     self._selected_bar_index = nil
 end
@@ -84,11 +73,15 @@ function BuffBarsComponent:_update_create_bar()
     Imgui.same_line()
     self._new_bar_name = Imgui.ided_input_text(self.__class_name .. '_BAR_NAME_INPUT', self._new_bar_name)
 
-    if create_bar then
-        if not table.contains(self._bars, self._new_bar_name) then
+    if not string.is_nil_or_whitespace(self._new_bar_name) and create_bar then
+        mod:dump({self._bars}, '', 2)
+        if self._bars == nil or #self._bars == 0 then
+            self._bars = { self._new_bar_name }
+        elseif not table.contains(self._bars, self._new_bar_name) then
             table.insert(self._bars, self._new_bar_name)
         end
 
+        mod:set(BARS_SETTING_ID, self._bars)
         self._new_bar_name = ''
     end
 end
@@ -96,7 +89,10 @@ end
 function BuffBarsComponent:_update_clear_or_delete_bar()
     self._selected_bar_index = Imgui.combo(self.__class_name .. '_SELECT_BAR_INPUT', mod:localize(SELECT_BUFF_BAR_LABEL_LOC_ID), self._bars, self._selected_bar_index)
     Imgui.same_line()
+    Imgui.push_id(self.__class_name .. '_' .. CLEAR_BUFF_BAR_BUTTON_LOC_ID:upper())
     local clear_bar = Imgui.button(mod:localize(CLEAR_BUFF_BAR_BUTTON_LOC_ID))
+    Imgui.pop_id()
+
     Imgui.same_line()
     local delete_bar = Imgui.button(mod:localize(DELETE_BUFF_BAR_BUTTON_LOC_ID))
 
@@ -108,30 +104,39 @@ function BuffBarsComponent:_update_clear_or_delete_bar()
                     data.bar_name = ''
                 end
             end
+            self._selected_bar_index = nil
         end
     
         if delete_bar then
             table.remove(self._bars, self._selected_bar_index)
-            self._selected_bar_index = nil
+            mod:set(BARS_SETTING_ID, self._bars)
         end
     end
 end
 
 function BuffBarsComponent:_update_bar_windows()
+    if self._bars == nil or #self._bars == 0 then
+        return
+    end
+
     for _, bar in ipairs(self._bars) do
         Imgui.push_id(('%s_%s'):format(self.__class_name, string.to_pascal_case(bar, ' ')))
         if Imgui.collapsing_header(bar) then
             if not table.is_nil_or_empty(self._buffs_data) then
-                local bar_id = string.to_pascal_case(bar, ' ')
+                local bar_id = string.to_pascal_case(bar, ' '):upper()
                 local buffs_for_bar = table.filter(self._buffs_data, function(data)
-                    return data.name == bar
+                    return data.bar_name == bar
+                end)
+
+                local sorted_data = table.sorted_by_value(buffs_for_bar, function(dataA, dataB)
+                    return dataA.name < dataB.name
                 end)
 
                 local window_id = ('%s_%s'):format(self.__class_name, bar_id)
                 Imgui.begin_child_window(window_id, UiSettings.BAR_WINDOW_SIZE[1], UiSettings.BAR_WINDOW_SIZE[2], true, 'always_auto_resize', 'horizontal_scrollbar')
 
                 if not table.is_nil_or_empty(buffs_for_bar) then
-                    _update_buffs(window_id, buffs_for_bar)
+                    _update_buffs(window_id, sorted_data)
                 end
 
                 Imgui.end_child_window()
