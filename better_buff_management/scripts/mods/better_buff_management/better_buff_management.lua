@@ -67,9 +67,9 @@ end
 
 local function add_buff_bar_hud_definitions(definitions)
     local buffs_data = mod:get(BUFFS_DATA_SETTING_ID)
+    local bars = mod:get(BARS_SETTING_ID)
 
-    if not table.is_nil_or_empty(buffs_data) then
-        local bars = mod:get(BARS_SETTING_ID)
+    if not table.is_nil_or_empty(buffs_data) and not table.is_nil_or_empty(bars) then
 
         for _, bar_name in ipairs(bars) do
             table.insert(definitions, {
