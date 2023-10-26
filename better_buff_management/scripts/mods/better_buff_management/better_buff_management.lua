@@ -1,11 +1,12 @@
 local mod = get_mod('better_buff_management')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/table')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/mod')
-mod:add_require_path('better_buff_management/scripts/mods/better_buff_management/hud/hud_element_buff_bar')
+local HudElementBuffBar = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/hud/hud_element_buff_bar')
 
 local management_window = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/window'):new()
 
 local BUFFS_DATA_SETTING_ID = 'buffs_data'
+local BARS_SETTING_ID = 'bars'
 
 -- -------------------------------
 -- ------- Local Functions -------
@@ -46,7 +47,7 @@ end
 
 local function get_filter_for_bar(buffs_data, bar_name)
     local filter_data = table.filter(buffs_data, function(filter_data)
-        return filter_data.name == bar_name and not filter_data.is_hidden
+        return filter_data.bar_name == bar_name and not filter_data.is_hidden
     end)
 
     if table.is_nil_or_empty(filter_data) then
@@ -62,10 +63,7 @@ local function add_buff_bar_hud_definitions(definitions)
     local buffs_data = mod:get(BUFFS_DATA_SETTING_ID)
 
     if not table.is_nil_or_empty(buffs_data) then
-        local raw_bars = table.filter(buffs_data, function(data)
-            return data.bar_name
-        end)
-        local bars = table.to_array(table.set(raw_bars))
+        local bars = mod:get(BARS_SETTING_ID)
 
         for _, bar_name in ipairs(bars) do
             table.insert(definitions, {
@@ -118,12 +116,15 @@ mod:hook('UIHud', 'init', function(func, self, definitions, visibility_groups, p
     return func(self, definitions, visibility_groups, params)
 end)
 
-mod:hook('UiHud', '_add_element', function(func, self, definition, elements, elements_array)
-    func(self, definition, elements, elements_array)
-
-    if definition.class_name:starts_with('HudElementBuffBar') and elements[definition.class_name] then
-        local hud_element = elements[definition.class_name]
+mod:hook('UIHud', '_add_element', function(func, self, definition, elements, elements_array)
+    if definition.class_name:starts_with('HudElementBuffBar') then
+        local draw_layer = 0
+        local hud_scale = definition.use_hud_scale and self:_hud_scale() or RESOLUTION_LOOKUP.scale
+        local hud_element = HudElementBuffBar:new(self, draw_layer, hud_scale, definition.buffs_filter)
         hud_element.__class_name = definition.class_name
-        hud_element.load_buffs_filter(definition.buffs_filter)
+        elements[definition.class_name] = hud_element
+        table.insert(elements_array, hud_element)
+    else
+        func(self, definition, elements, elements_array)
     end
 end)
