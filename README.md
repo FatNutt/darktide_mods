@@ -11,6 +11,7 @@ Create your own custom bars for showing a subset of the buffs in the game.
 Source [/better_buff_management](better_buff_management)
 
 ### Future features
+- Change position buffs are add / expand from (i.e. it growing middle out or from right to left)
+- Change direction buffs are added from (i.e horizontal vs vertical)
 - Position bars without another mod
-- Change direction buffs are add / expand from (i.e. it growing middle out or vertically instead of horizontally)
 - Hide certain buffs in general
