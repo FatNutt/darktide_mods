@@ -94,11 +94,13 @@ local function add_or_remove_default_buff_bar(definitions)
         return definition.class_name == HUD_ELEMENT_PLAYER_BUFFS
     end)
 
+    mod:dump({'PlayerBuffsIndex', index })
+
     if mod:get(TOGGLE_DEFAULT_BAR_SETTING_ID) then
         if index > 0 then
             table.remove(definitions, index)
         end
-    else
+    elseif not mod:is_in_hub() then
         if index <= 0 then
             table.insert(definitions, PlayerBuffsDefinition)
         end
