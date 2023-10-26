@@ -23,6 +23,9 @@ return {
     toggle_hidden_buffs = {
         en = 'Toggle hidden buffs',
     },
+    toggle_default_bar = {
+        en = 'Toggle default buff bar'
+    },
     reset_all_settings = {
         en = 'Reset all settings'
     },

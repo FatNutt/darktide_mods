@@ -46,7 +46,7 @@ local function _update_buffs(window_id, buffs)
         end
 
         if remove then
-            buff.bar = ''
+            buff.bar_name = ''
         end
         same_line_flag = true
     end
@@ -74,7 +74,6 @@ function BuffBarsComponent:_update_create_bar()
     self._new_bar_name = Imgui.ided_input_text(self.__class_name .. '_BAR_NAME_INPUT', self._new_bar_name)
 
     if not string.is_nil_or_whitespace(self._new_bar_name) and create_bar then
-        mod:dump({self._bars}, '', 2)
         if self._bars == nil or #self._bars == 0 then
             self._bars = { self._new_bar_name }
         elseif not table.contains(self._bars, self._new_bar_name) then

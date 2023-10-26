@@ -15,6 +15,7 @@ local ERRORS = {
 
 local BUFF_DIRECTION_SETTING_ID = 'add_buff_direction'
 local TOGGLE_HIDDEN_SETTING_ID = 'toggle_hidden_buffs'
+local TOGGLE_DEFAULT_BAR_SETTING_ID = 'toggle_default_bar'
 local RESET_SETTIINGS_LOCALIZATION_ID = 'reset_all_settings'
 
 -- -------------------------------
@@ -40,36 +41,46 @@ function SettingsComponent:init(settings_widgets)
     validate_settings_widgets(settings_widgets)
 
     self._settings_widgets = settings_widgets
-    self._direction_options = settings_widgets[table.find_by_key(settings_widgets, 'setting_id', BUFF_DIRECTION_SETTING_ID)].options
+    -- self._direction_options = settings_widgets[table.find_by_key(settings_widgets, 'setting_id', BUFF_DIRECTION_SETTING_ID)].options
 
     self._buff_direction = mod:get(BUFF_DIRECTION_SETTING_ID)
     self._toggle_hidden = mod:get(TOGGLE_HIDDEN_SETTING_ID)
+    self._toggle_default_bar = mod:get(TOGGLE_DEFAULT_BAR_SETTING_ID)
 end
 
 -- -------------------------------
 -- ------ Private Functions ------
 -- -------------------------------
 
-function SettingsComponent:_update_buff_direction()
-    local combo_items = table.map(self._direction_options, function(option)
-        return mod:localize(option.text)
-    end)
+-- function SettingsComponent:_update_buff_direction()
+--     local combo_items = table.map(self._direction_options, function(option)
+--         return mod:localize(option.text)
+--     end)
 
-    local current_index = table.find_by_key(self._direction_options, 'value', self._buff_direction)
-    local new_index = Imgui.combo(mod:localize(BUFF_DIRECTION_SETTING_ID), combo_items, current_index, false)
+--     local current_index = table.find_by_key(self._direction_options, 'value', self._buff_direction)
+--     local new_index = Imgui.combo(mod:localize(BUFF_DIRECTION_SETTING_ID), combo_items, current_index, false)
 
-    if new_index ~= current_index then
-        self._buff_direction = self._direction_options[new_index].value
-        mod:set(BUFF_DIRECTION_SETTING_ID, self._buff_direction)
-    end
-end
+--     if new_index ~= current_index then
+--         self._buff_direction = self._direction_options[new_index].value
+--         mod:set(BUFF_DIRECTION_SETTING_ID, self._buff_direction)
+--     end
+-- end
 
-function SettingsComponent:_update_toggle_hidden()
-    local new_flag = Imgui.checkbox(mod:localize(TOGGLE_HIDDEN_SETTING_ID), self._toggle_hidden)
+-- function SettingsComponent:_update_toggle_hidden()
+--     local new_flag = Imgui.checkbox(mod:localize(TOGGLE_HIDDEN_SETTING_ID), self._toggle_hidden)
 
-    if new_flag ~= self._toggle_hidden then
-        self._toggle_hidden = new_flag
-        mod:set(TOGGLE_HIDDEN_SETTING_ID, self._toggle_hidden)
+--     if new_flag ~= self._toggle_hidden then
+--         self._toggle_hidden = new_flag
+--         mod:set(TOGGLE_HIDDEN_SETTING_ID, self._toggle_hidden)
+--     end
+-- end
+
+function SettingsComponent:_update_toggle_default_bar()
+    local new_flag = Imgui.checkbox(mod:localize(TOGGLE_DEFAULT_BAR_SETTING_ID), self._toggle_default_bar)
+
+    if new_flag ~= self._toggle_default_bar then
+        self._toggle_default_bar = new_flag
+        mod:set(TOGGLE_DEFAULT_BAR_SETTING_ID, self._toggle_default_bar)
     end
 end
 
@@ -88,8 +99,9 @@ end
 -- -------------------------------
 
 function SettingsComponent:update()
-    self:_update_buff_direction()
-    self:_update_toggle_hidden()
+    -- self:_update_buff_direction()
+    -- self:_update_toggle_hidden()
+    self:_update_toggle_default_bar()
     self:_update_reset_settings()
 end
 

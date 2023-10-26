@@ -1,3 +1,5 @@
+local HudElementsDefinitions = require('scripts/ui/hud/hud_elements_player')
+
 local mod = get_mod('better_buff_management')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/table')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/mod')
@@ -7,6 +9,10 @@ local management_window = mod:io_dofile('better_buff_management/scripts/mods/bet
 
 local BUFFS_DATA_SETTING_ID = 'buffs_data'
 local BARS_SETTING_ID = 'bars'
+local TOGGLE_DEFAULT_BAR_SETTING_ID = 'toggle_default_bar'
+
+local HUD_ELEMENT_PLAYER_BUFFS = 'HudElementPlayerBuffs'
+local _, PlayerBuffsDefinition = table.find_by_key(HudElementsDefinitions, 'class_name', HUD_ELEMENT_PLAYER_BUFFS)
 
 -- -------------------------------
 -- ------- Local Functions -------
@@ -83,6 +89,22 @@ local function add_buff_bar_hud_definitions(definitions)
     end
 end
 
+local function add_or_remove_default_buff_bar(definitions)
+    local index = table.index_of_condition(definitions, function(definition)
+        return definition.class_name == HUD_ELEMENT_PLAYER_BUFFS
+    end)
+
+    if mod:get(TOGGLE_DEFAULT_BAR_SETTING_ID) then
+        if index > 0 then
+            table.remove(definitions, index)
+        end
+    else
+        if index <= 0 then
+            table.insert(definitions, PlayerBuffsDefinition)
+        end
+    end
+end
+
 -- -------------------------------
 -- ------- Public Functions ------
 -- -------------------------------
@@ -94,6 +116,12 @@ mod.configure_buffs = function()
     elseif not mod:is_in_hub() then
         recreate_hud()
         management_window:open()
+    end
+end
+
+mod.on_setting_changed = function(setting_id)
+    if setting_id == TOGGLE_DEFAULT_BAR_SETTING_ID then
+        recreate_hud()
     end
 end
 
@@ -110,6 +138,8 @@ mod:hook('UIManager', 'using_input', function(func, ...)
 end)
 
 mod:hook('UIHud', 'init', function(func, self, definitions, visibility_groups, params)
+    add_or_remove_default_buff_bar(definitions)
+
     remove_buff_bar_hud_definitions(definitions)
     add_buff_bar_hud_definitions(definitions)
 
