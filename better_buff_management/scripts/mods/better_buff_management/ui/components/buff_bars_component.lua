@@ -103,12 +103,16 @@ function BuffBarsComponent:_update_clear_or_delete_bar()
                     data.bar_name = ''
                 end
             end
-            self._selected_bar_index = nil
+
+            if clear_bar then
+                self._selected_bar_index = nil
+            end
         end
     
         if delete_bar then
             table.remove(self._bars, self._selected_bar_index)
             mod:set(BARS_SETTING_ID, self._bars)
+            self._selected_bar_index = nil
         end
     end
 end
