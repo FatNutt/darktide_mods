@@ -1,7 +1,6 @@
 require('scripts/ui/hud/elements/player_buffs/hud_element_player_buffs_polling')
 
 local mod = get_mod('better_buff_management')
-
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/table')
 local BuffBarDefinitions = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/hud/hud_element_buff_bar_definitions')
 
@@ -23,9 +22,9 @@ end
 -- -------------------------------
 
 function HudElementBuffBar:event_player_buff_added(player, buff_instance)
-    if self._filter and self._filter[buff_instance._template_name] then        
+    if self._filter and self._filter[buff_instance._template_name] then
         HudElementBuffBar.super.event_player_buff_added(self, player, buff_instance)
-    end    
+    end
 end
 
 function HudElementBuffBar:event_player_buff_stack_added(player, buff_instance)
@@ -52,7 +51,8 @@ function HudElementBuffBar:_sync_current_active_buffs(buffs)
         return
     end
 
-    filtered_buffs = table.to_array(filtered_buffs)    
+    filtered_buffs = table.to_array(filtered_buffs)
+    
     HudElementBuffBar.super._sync_current_active_buffs(self, filtered_buffs)
 end
 
