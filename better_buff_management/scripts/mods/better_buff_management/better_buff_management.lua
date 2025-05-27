@@ -1,6 +1,7 @@
 local HudElementsDefinitions = require('scripts/ui/hud/hud_elements_player')
 
 local mod = get_mod('better_buff_management')
+
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/table')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/mod')
 local HudElementBuffBar = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/hud/hud_element_buff_bar')
@@ -52,7 +53,7 @@ local function remove_buff_bar_hud_definitions(definitions)
 end
 
 local function get_filter_for_bar(buffs_data, bar_name)
-    local filter_data = table.filter(buffs_data, function(filter_data)
+    local filter_data = table.filter(buffs_data, function(filter_data)        
         return filter_data.bar_name == bar_name and not filter_data.is_hidden
     end)
 

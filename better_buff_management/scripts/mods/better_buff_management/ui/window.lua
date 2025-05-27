@@ -1,4 +1,5 @@
 local mod = get_mod('better_buff_management')
+
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/components/base_component')
 
 local BUFF_TEMPLATES = require('scripts/settings/buff/buff_templates')
@@ -37,7 +38,8 @@ local function get_icon(buff_template, cached_items)
     if buff_name:find('_parent') then
         buff_name = buff_name:gsub('_parent', '')
     end
-
+ 
+  
     local parent = table.find_by_key(BUFF_TEMPLATES, 'child_buff_template', buff_name)
     if parent then
         return BUFF_TEMPLATES[parent].hud_icon
@@ -78,7 +80,7 @@ end
 function ManagementWindow:_load_buffs_data()
     local buffs_data = {}
     local raw_buffs_data = mod:get(BUFFS_DATA_SETTING_ID)
-
+    
     -- Go through buffs and make sure they are still in the game
     if not table.is_nil_or_empty(raw_buffs_data) then
         for key, data in pairs(raw_buffs_data) do
@@ -89,21 +91,24 @@ function ManagementWindow:_load_buffs_data()
             end
         end
     end
-
+    
     -- Go through templates and either update icons or add new buffs with icons not in save data
     local cached_items = MASTER_ITEMS.get_cached()
-    for _, template in pairs(BUFF_TEMPLATES) do
-        local icon = get_icon(template, cached_items)
+        
+    for buffCategory, template in pairs(BUFF_TEMPLATES) do
+        if not (buffCategory == "PREDICTED" or buffCategory == "NON_PREDICTED") then 
+          local icon = get_icon(template, cached_items)
 
-        if icon then
-            if buffs_data[template.name] == nil then
-                buffs_data[template.name] = BuffData:new({
-                    name = template.name,
-                    icon = icon
-                })
-            else
-                buffs_data[template.name].icon = icon
-            end
+          if icon then
+              if buffs_data[template.name] == nil then
+                  buffs_data[template.name] = BuffData:new({
+                      name = template.name,
+                      icon = icon
+                  })
+              else
+                  buffs_data[template.name].icon = icon
+              end
+          end
         end
     end
 
@@ -114,7 +119,9 @@ function ManagementWindow:_save_buffs_data()
     local save_data = {}
 
     for _, data in pairs(self._buffs_data) do
-        save_data[data.name] = data:save_data()
+        if not string.is_nil_or_whitespace(data.bar_name) then
+          save_data[data.name] = data:save_data()
+        end
     end
 
     mod:set(BUFFS_DATA_SETTING_ID, save_data)
