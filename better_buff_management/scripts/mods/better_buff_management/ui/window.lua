@@ -1,5 +1,4 @@
 local mod = get_mod('better_buff_management')
-
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/components/base_component')
 
 local BUFF_TEMPLATES = require('scripts/settings/buff/buff_templates')
@@ -38,8 +37,6 @@ local function get_icon(buff_template, cached_items)
     if buff_name:find('_parent') then
         buff_name = buff_name:gsub('_parent', '')
     end
- 
-  
     local parent = table.find_by_key(BUFF_TEMPLATES, 'child_buff_template', buff_name)
     if parent then
         return BUFF_TEMPLATES[parent].hud_icon
@@ -80,7 +77,7 @@ end
 function ManagementWindow:_load_buffs_data()
     local buffs_data = {}
     local raw_buffs_data = mod:get(BUFFS_DATA_SETTING_ID)
-    
+
     -- Go through buffs and make sure they are still in the game
     if not table.is_nil_or_empty(raw_buffs_data) then
         for key, data in pairs(raw_buffs_data) do
@@ -91,10 +88,10 @@ function ManagementWindow:_load_buffs_data()
             end
         end
     end
-    
+
     -- Go through templates and either update icons or add new buffs with icons not in save data
     local cached_items = MASTER_ITEMS.get_cached()
-        
+
     for buffCategory, template in pairs(BUFF_TEMPLATES) do
         if not (buffCategory == "PREDICTED" or buffCategory == "NON_PREDICTED") then 
           local icon = get_icon(template, cached_items)
