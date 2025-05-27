@@ -37,6 +37,7 @@ local function get_icon(buff_template, cached_items)
     if buff_name:find('_parent') then
         buff_name = buff_name:gsub('_parent', '')
     end
+ 
     local parent = table.find_by_key(BUFF_TEMPLATES, 'child_buff_template', buff_name)
     if parent then
         return BUFF_TEMPLATES[parent].hud_icon
