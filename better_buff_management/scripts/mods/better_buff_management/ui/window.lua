@@ -92,18 +92,21 @@ function ManagementWindow:_load_buffs_data()
 
     -- Go through templates and either update icons or add new buffs with icons not in save data
     local cached_items = MASTER_ITEMS.get_cached()
-    for _, template in pairs(BUFF_TEMPLATES) do
-        local icon = get_icon(template, cached_items)
 
-        if icon then
-            if buffs_data[template.name] == nil then
-                buffs_data[template.name] = BuffData:new({
-                    name = template.name,
-                    icon = icon
-                })
-            else
-                buffs_data[template.name].icon = icon
-            end
+    for buffCategory, template in pairs(BUFF_TEMPLATES) do
+        if not (buffCategory == "PREDICTED" or buffCategory == "NON_PREDICTED") then 
+          local icon = get_icon(template, cached_items)
+
+          if icon then
+              if buffs_data[template.name] == nil then
+                  buffs_data[template.name] = BuffData:new({
+                      name = template.name,
+                      icon = icon
+                  })
+              else
+                  buffs_data[template.name].icon = icon
+              end
+          end
         end
     end
 
@@ -114,7 +117,9 @@ function ManagementWindow:_save_buffs_data()
     local save_data = {}
 
     for _, data in pairs(self._buffs_data) do
-        save_data[data.name] = data:save_data()
+        if not string.is_nil_or_whitespace(data.bar_name) then
+          save_data[data.name] = data:save_data()
+        end
     end
 
     mod:set(BUFFS_DATA_SETTING_ID, save_data)
