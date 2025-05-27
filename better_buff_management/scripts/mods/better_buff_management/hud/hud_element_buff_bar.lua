@@ -51,7 +51,8 @@ function HudElementBuffBar:_sync_current_active_buffs(buffs)
         return
     end
 
-    filtered_buffs = table.to_array(filtered_buffs)    
+    filtered_buffs = table.to_array(filtered_buffs)
+    
     HudElementBuffBar.super._sync_current_active_buffs(self, filtered_buffs)
 end
 
