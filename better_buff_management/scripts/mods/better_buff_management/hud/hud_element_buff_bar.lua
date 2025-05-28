@@ -27,6 +27,11 @@ function HudElementBuffBar:event_player_buff_added(player, buff_instance)
     end
 end
 
+function HudElementBuffBar:event_player_buff_stack_added(player, buff_instance)
+    if self._filter and self._filter[buff_instance._template_name] then        
+        HudElementBuffBar.super.event_player_buff_stack_added(self, player, buff_instance)
+    end    
+end
 
 -- -------------------------------
 -- ------ Private Functions ------
