@@ -14,7 +14,6 @@ local BaseComponent = class('BaseComponent')
 function BaseComponent:init()
 end
 
-
 -- -------------------------------
 -- ------- Public Functions ------
 -- -------------------------------

@@ -3,7 +3,8 @@ local HudElementsDefinitions = require('scripts/ui/hud/hud_elements_player')
 local mod = get_mod('better_buff_management')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/table')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/mod')
-local HudElementBuffBar = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/hud/hud_element_buff_bar')
+local HudElementBuffBar = mod:io_dofile(
+'better_buff_management/scripts/mods/better_buff_management/hud/hud_element_buff_bar')
 
 local management_window = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/window'):new()
 
@@ -21,7 +22,6 @@ local _, PlayerBuffsDefinition = table.find_by_key(HudElementsDefinitions, 'clas
 local function recreate_hud()
     local ui_manager = Managers.ui
     if ui_manager then
-
         local hud = ui_manager._hud
         if hud then
             local player_manager = Managers.player
@@ -46,7 +46,6 @@ local function remove_buff_bar_hud_definitions(definitions)
         if index > 0 then
             table.remove(definitions, index)
         end
-
     until index == -1
     definitions = table.to_array(definitions)
 end
@@ -70,7 +69,6 @@ local function add_buff_bar_hud_definitions(definitions)
     local bars = mod:get(BARS_SETTING_ID)
 
     if not table.is_nil_or_empty(buffs_data) and not table.is_nil_or_empty(bars) then
-
         for _, bar_name in ipairs(bars) do
             table.insert(definitions, {
                 package = 'packages/ui/hud/player_buffs/player_buffs',
@@ -149,7 +147,8 @@ end)
 mod:hook('UIHud', '_add_element', function(func, self, definition, elements, elements_array)
     if definition.class_name:starts_with('HudElementBuffBar') then
         local draw_layer = 0
-        local hud_scale = definition.use_hud_scale and (self._hud_scale ~= nil and self:_hud_scale()) or RESOLUTION_LOOKUP.scale
+        local hud_scale = definition.use_hud_scale and (self._hud_scale ~= nil and self:_hud_scale()) or
+        RESOLUTION_LOOKUP.scale
         local hud_element = HudElementBuffBar:new(self, draw_layer, hud_scale, definition.buffs_filter)
         hud_element.__class_name = definition.class_name
         elements[definition.class_name] = hud_element

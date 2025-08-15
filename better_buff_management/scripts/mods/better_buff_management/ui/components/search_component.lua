@@ -100,9 +100,11 @@ function SearchComponent:_draw_buff(search_data)
     local button_id = ('%s_%s_IMAGE_BUTTON'):format(self.__class_name, search_data.buff.name)
     Imgui.push_id(button_id)
     if search_data.is_selected then
-        is_clicked = Imgui.image_button(search_data.buff.icon, UiSettings.BUFF_IMAGE_SIZE[1], UiSettings.BUFF_IMAGE_SIZE[2], 266, 200, 0, 1)
+        is_clicked = Imgui.image_button(search_data.buff.icon, UiSettings.BUFF_IMAGE_SIZE[1],
+            UiSettings.BUFF_IMAGE_SIZE[2], 266, 200, 0, 1)
     else
-        is_clicked = Imgui.image_button(search_data.buff.icon, UiSettings.BUFF_IMAGE_SIZE[1], UiSettings.BUFF_IMAGE_SIZE[2], 255, 255, 255, 1)
+        is_clicked = Imgui.image_button(search_data.buff.icon, UiSettings.BUFF_IMAGE_SIZE[1],
+            UiSettings.BUFF_IMAGE_SIZE[2], 255, 255, 255, 1)
     end
     Imgui.pop_id()
 
@@ -123,7 +125,8 @@ function SearchComponent:_update_search_window()
     end)
 
     local same_line_flag = 1
-    Imgui.begin_child_window(self.__class_name .. '_SEARCH_WINDOW', UiSettings.SEARCH_WINDOW_SIZE[1], UiSettings.SEARCH_WINDOW_SIZE[2], true, 'always_auto_resize', 'horizontal_scrollbar')
+    Imgui.begin_child_window(self.__class_name .. '_SEARCH_WINDOW', UiSettings.SEARCH_WINDOW_SIZE[1],
+        UiSettings.SEARCH_WINDOW_SIZE[2], true, 'always_auto_resize', 'horizontal_scrollbar')
     for _, search_data in pairs(sorted_data) do
         if same_line_flag > 1 then
             Imgui.same_line()

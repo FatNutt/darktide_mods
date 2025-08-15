@@ -11,7 +11,6 @@ function BaseBuffComponent:init(buffs_data)
     self._buffs_data = buffs_data
 end
 
-
 -- -------------------------------
 -- ------ Private Functions ------
 -- -------------------------------

@@ -86,7 +86,8 @@ function BuffBarsComponent:_update_create_bar()
 end
 
 function BuffBarsComponent:_update_clear_or_delete_bar()
-    self._selected_bar_index = Imgui.combo(self.__class_name .. '_SELECT_BAR_INPUT', mod:localize(SELECT_BUFF_BAR_LABEL_LOC_ID), self._bars, self._selected_bar_index)
+    self._selected_bar_index = Imgui.combo(self.__class_name .. '_SELECT_BAR_INPUT',
+        mod:localize(SELECT_BUFF_BAR_LABEL_LOC_ID), self._bars, self._selected_bar_index)
     Imgui.same_line()
     Imgui.push_id(self.__class_name .. '_' .. CLEAR_BUFF_BAR_BUTTON_LOC_ID:upper())
     local clear_bar = Imgui.button(mod:localize(CLEAR_BUFF_BAR_BUTTON_LOC_ID))
@@ -108,7 +109,7 @@ function BuffBarsComponent:_update_clear_or_delete_bar()
                 self._selected_bar_index = nil
             end
         end
-    
+
         if delete_bar then
             table.remove(self._bars, self._selected_bar_index)
             mod:set(BARS_SETTING_ID, self._bars)
@@ -136,7 +137,8 @@ function BuffBarsComponent:_update_bar_windows()
                 end)
 
                 local window_id = ('%s_%s'):format(self.__class_name, bar_id)
-                Imgui.begin_child_window(window_id, UiSettings.BAR_WINDOW_SIZE[1], UiSettings.BAR_WINDOW_SIZE[2], true, 'always_auto_resize', 'horizontal_scrollbar')
+                Imgui.begin_child_window(window_id, UiSettings.BAR_WINDOW_SIZE[1], UiSettings.BAR_WINDOW_SIZE[2], true,
+                    'always_auto_resize', 'horizontal_scrollbar')
 
                 if not table.is_nil_or_empty(buffs_for_bar) then
                     _update_buffs(window_id, sorted_data)
@@ -148,7 +150,6 @@ function BuffBarsComponent:_update_bar_windows()
         Imgui.pop_id()
     end
 end
-
 
 -- -------------------------------
 -- ------- Public Functions ------

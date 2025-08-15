@@ -1,14 +1,18 @@
 local mod = get_mod('better_buff_management')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/components/base_component')
 
+-- Source Code requires
 local BUFF_TEMPLATES = require('scripts/settings/buff/buff_templates')
 local MASTER_ITEMS = require('scripts/backend/master_items')
 
 local BuffData = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/models/buff_data')
 
-local SettingsComponent = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/components/settings_component')
-local BuffBarsComponent = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/components/buff_bars_component')
-local SearchComponent = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/components/search_component')
+local SettingsComponent = mod:io_dofile(
+    'better_buff_management/scripts/mods/better_buff_management/ui/components/settings_component')
+local BuffBarsComponent = mod:io_dofile(
+    'better_buff_management/scripts/mods/better_buff_management/ui/components/buff_bars_component')
+local SearchComponent = mod:io_dofile(
+    'better_buff_management/scripts/mods/better_buff_management/ui/components/search_component')
 
 local MOD_NAME = mod:localize('mod_name')
 local CLASS_NAME = 'ManagementWindow'
@@ -94,19 +98,19 @@ function ManagementWindow:_load_buffs_data()
     local cached_items = MASTER_ITEMS.get_cached()
 
     for buffCategory, template in pairs(BUFF_TEMPLATES) do
-        if not (buffCategory == "PREDICTED" or buffCategory == "NON_PREDICTED") then 
-          local icon = get_icon(template, cached_items)
+        if not (buffCategory == "PREDICTED" or buffCategory == "NON_PREDICTED") then
+            local icon = get_icon(template, cached_items)
 
-          if icon then
-              if buffs_data[template.name] == nil then
-                  buffs_data[template.name] = BuffData:new({
-                      name = template.name,
-                      icon = icon
-                  })
-              else
-                  buffs_data[template.name].icon = icon
-              end
-          end
+            if icon then
+                if buffs_data[template.name] == nil then
+                    buffs_data[template.name] = BuffData:new({
+                        name = template.name,
+                        icon = icon
+                    })
+                else
+                    buffs_data[template.name].icon = icon
+                end
+            end
         end
     end
 
@@ -118,7 +122,7 @@ function ManagementWindow:_save_buffs_data()
 
     for _, data in pairs(self._buffs_data) do
         if not string.is_nil_or_whitespace(data.bar_name) then
-          save_data[data.name] = data:save_data()
+            save_data[data.name] = data:save_data()
         end
     end
 
@@ -183,7 +187,7 @@ function ManagementWindow:update()
         local _, closed = Imgui.begin_window(mod:localize('mod_name'))
         if closed then
             self:close()
-        else            
+        else
             self._settings_component:update()
 
             Imgui.separator()
