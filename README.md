@@ -17,5 +17,3 @@ Source [/better_buff_management](better_buff_management)
 
 - Change position buffs are add / expand from (i.e. it growing middle out or from right to left)
 - Change direction buffs are added from (i.e horizontal vs vertical)
-- Position bars without another mod
-- Hide certain buffs in general
