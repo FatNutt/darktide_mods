@@ -4,7 +4,7 @@ local mod = get_mod('better_buff_management')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/table')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/mod')
 local HudElementBuffBar = mod:io_dofile(
-'better_buff_management/scripts/mods/better_buff_management/hud/hud_element_buff_bar')
+    'better_buff_management/scripts/mods/better_buff_management/hud/hud_element_buff_bar')
 
 local management_window = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/window'):new()
 
@@ -148,7 +148,7 @@ mod:hook('UIHud', '_add_element', function(func, self, definition, elements, ele
     if definition.class_name:starts_with('HudElementBuffBar') then
         local draw_layer = 0
         local hud_scale = definition.use_hud_scale and (self._hud_scale ~= nil and self:_hud_scale()) or
-        RESOLUTION_LOOKUP.scale
+            RESOLUTION_LOOKUP.scale
         local hud_element = HudElementBuffBar:new(self, draw_layer, hud_scale, definition.buffs_filter)
         hud_element.__class_name = definition.class_name
         elements[definition.class_name] = hud_element
