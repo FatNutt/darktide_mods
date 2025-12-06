@@ -198,6 +198,7 @@ function ManagementWindow:update()
 
             self._search_component:update()
         end
+        Imgui.end_window()
     end
 end
 
