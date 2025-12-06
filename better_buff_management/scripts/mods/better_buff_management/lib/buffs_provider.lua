@@ -74,7 +74,6 @@ function BuffsProvider.get_all_buffs()
 
             if icon and buffs[template.name] == nil then
                 buffs[template.name] = BuffData:new({
-                    name = template.name,
                     icon = icon
                 })
             end
