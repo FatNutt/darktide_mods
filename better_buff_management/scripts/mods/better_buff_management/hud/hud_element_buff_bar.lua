@@ -13,9 +13,9 @@ local BuffBarDefinitions = mod:io_dofile(
 -- --------- Constructor ---------
 -- -------------------------------
 local HudElementBuffBar = class('HudElementBuffBar', 'HudElementPlayerBuffs')
-function HudElementBuffBar:init(parent, draw_layer, start_scale, filter)
+function HudElementBuffBar:init(parent, draw_layer, start_scale, bar_data)
     HudElementBuffBar.super.init(self, parent, draw_layer, start_scale, BuffBarDefinitions)
-    self._filter = filter
+    self._filter = bar_data.filter
 end
 
 -- -------------------------------

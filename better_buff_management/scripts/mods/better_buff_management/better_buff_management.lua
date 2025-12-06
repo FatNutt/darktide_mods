@@ -6,10 +6,11 @@ mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilit
 local HudElementBuffBar = mod:io_dofile(
     'better_buff_management/scripts/mods/better_buff_management/hud/hud_element_buff_bar')
 
+local BuffBarsProvider = mod:io_dofile(
+    'better_buff_management/scripts/mods/better_buff_management/lib/buff_bars_provider')
+
 local management_window = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/window'):new()
 
-local BUFFS_DATA_SETTING_ID = 'buffs_data'
-local BARS_SETTING_ID = 'bars'
 local TOGGLE_DEFAULT_BAR_SETTING_ID = 'toggle_default_bar'
 
 local HUD_ELEMENT_PLAYER_BUFFS = 'HudElementPlayerBuffs'
@@ -50,26 +51,11 @@ local function remove_buff_bar_hud_definitions(definitions)
     definitions = table.to_array(definitions)
 end
 
-local function get_filter_for_bar(buffs_data, bar_name)
-    local filter_data = table.filter(buffs_data, function(filter_data)
-        return filter_data.bar_name == bar_name and not filter_data.is_hidden
-    end)
-
-    if table.is_nil_or_empty(filter_data) then
-        return nil
-    end
-
-    return table.map(filter_data, function(_)
-        return true
-    end)
-end
-
 local function add_buff_bar_hud_definitions(definitions)
-    local buffs_data = mod:get(BUFFS_DATA_SETTING_ID)
-    local bars = mod:get(BARS_SETTING_ID)
+    local bars = BuffBarsProvider.smart_load_buff_bars()
 
-    if not table.is_nil_or_empty(buffs_data) and not table.is_nil_or_empty(bars) then
-        for _, bar_name in ipairs(bars) do
+    if not table.is_nil_or_empty(bars) then
+        for bar_name, bar_data in ipairs(bars) do
             table.insert(definitions, {
                 package = 'packages/ui/hud/player_buffs/player_buffs',
                 use_retained_mode = true,
@@ -81,7 +67,7 @@ local function add_buff_bar_hud_definitions(definitions)
                     'alive',
                     'communication_wheel'
                 },
-                buffs_filter = get_filter_for_bar(buffs_data, bar_name)
+                data = bar_data
             })
         end
     end
@@ -149,7 +135,7 @@ mod:hook('UIHud', '_add_element', function(func, self, definition, elements, ele
         local draw_layer = 0
         local hud_scale = definition.use_hud_scale and (self._hud_scale ~= nil and self:_hud_scale()) or
             RESOLUTION_LOOKUP.scale
-        local hud_element = HudElementBuffBar:new(self, draw_layer, hud_scale, definition.buffs_filter)
+        local hud_element = HudElementBuffBar:new(self, draw_layer, hud_scale, definition.data)
         hud_element.__class_name = definition.class_name
         elements[definition.class_name] = hud_element
         table.insert(elements_array, hud_element)

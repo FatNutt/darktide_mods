@@ -1,7 +1,6 @@
 local mod = get_mod('better_buff_management')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/components/base_component')
 
--- Source Code requires
 local BuffBarsProvider = mod:io_dofile(
     'better_buff_management/scripts/mods/better_buff_management/lib/buff_bars_provider')
 
