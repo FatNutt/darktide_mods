@@ -80,9 +80,14 @@ BuffBar.DEFAULT = BuffBar:new({
 -- ------- Public Functions ------
 -- -------------------------------
 function BuffBar:save_data()
+    local filter_data = {}
+    for buff_name, data in pairs(self.filter) do
+        filter_data[buff_name] = data:save_data()
+    end
+
     return {
         bar_name = self.bar_name,
-        filter = self.filter,
+        filter = filter_data,
         direction = self.direction,
         alignment = self.alignment
     }

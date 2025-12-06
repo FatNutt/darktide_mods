@@ -42,7 +42,7 @@ function BuffData:init(params)
     self.name = params.name
     self.icon = params.icon
     self.is_hidden = params.is_hidden or false
-    self.bar_name = params.bar_name
+    -- self.bar_name = params.bar_name
 end
 
 -- -------------------------------
@@ -52,9 +52,12 @@ end
 -- -------------------------------
 -- ------- Public Functions ------
 -- -------------------------------
+function BuffData:save_data()
+    return { name = self.name, is_hidden = self.is_hidden }
+end
 
 function BuffData:save_data()
-    return { name = self.name, is_hidden = self.is_hidden, bar_name = self.bar_name }
+    return { name = self.name, is_hidden = self.is_hidden }
 end
 
 function BuffData:toggle_hidden()
