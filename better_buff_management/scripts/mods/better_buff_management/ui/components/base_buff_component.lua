@@ -6,28 +6,14 @@ mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/com
 -- --------- Constructor ---------
 -- -------------------------------
 local BaseBuffComponent = class('BaseBuffComponent', 'BaseComponent')
-function BaseBuffComponent:init(buffs_data)
+function BaseBuffComponent:init(bars)
     BaseBuffComponent.super.init(self)
-    self._buffs_data = buffs_data
+    self._bars = bars
 end
 
 -- -------------------------------
 -- ------ Private Functions ------
 -- -------------------------------
-
-function BaseBuffComponent:_get_buffs_for_bar(buff_bar_name, buffs_data)
-    if table.is_nil_or_empty(buffs_data) then
-        buffs_data = self._buffs_data
-    end
-
-    if not table.is_nil_or_empty(buffs_data) then
-        return table.filter(buffs_data, function(data)
-            return data.name == buff_bar_name
-        end)
-    end
-
-    return nil
-end
 
 -- -------------------------------
 -- ------- Public Functions ------

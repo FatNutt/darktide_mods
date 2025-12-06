@@ -49,7 +49,9 @@ BuffBar.DIRECTIONS = {
 }
 BuffBar.ALIGNMENTS = {
     LEFT = 'left',
-    RIGHT = 'right'
+    RIGHT = 'right',
+    UP = 'up',
+    DOWN = 'down'
 }
 
 function BuffBar:init(params)
