@@ -1,5 +1,5 @@
 local old_empty = table.is_empty
-table.is_empty = function (tbl)
+table.is_empty = function(tbl)
     return table.size(tbl) == 0 or old_empty(tbl)
 end
 

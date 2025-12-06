@@ -1,0 +1,29 @@
+# Force LF line endings for all files
+* text=auto eol=lf
+
+# Ensure these file types are always treated as text with LF endings
+*.js text eol=lf
+*.ts text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.xml text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.lua text eol=lf
+*.mod text eol=lf
+LICENSE text eol=lf
+
+# Binary files should not be modified
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.exe binary
+*.dll binary

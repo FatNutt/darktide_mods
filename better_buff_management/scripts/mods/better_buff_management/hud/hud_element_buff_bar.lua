@@ -8,7 +8,8 @@ local BuffBarSettings = mod:io_dofile(
     'better_buff_management/scripts/mods/better_buff_management/hud/hud_element_buff_bar_settings')
 local BuffBarDefinitions = mod:io_dofile(
     'better_buff_management/scripts/mods/better_buff_management/hud/hud_element_buff_bar_definitions')
-
+local BuffBar = mod:io_dofile(
+    'better_buff_management/scripts/mods/better_buff_management/models/buff_bar')
 -- -------------------------------
 -- ------- Local Functions -------
 -- -------------------------------
@@ -17,10 +18,10 @@ local BuffBarDefinitions = mod:io_dofile(
 -- --------- Constructor ---------
 -- -------------------------------
 local HudElementBuffBar = class('HudElementBuffBar', 'HudElementPlayerBuffs')
-function HudElementBuffBar:init(parent, draw_layer, start_scale, filter)
+function HudElementBuffBar:init(parent, draw_layer, start_scale, data)
     HudElementBuffBar.super.init(self, parent, draw_layer, start_scale, BuffBarDefinitions)
 
-    self._filter = filter
+    self._data = data or BuffBar.DEFAULT
     self._number_of_buffs_per_category = {}
     self._category_data = {
         offsets = {},
@@ -28,18 +29,23 @@ function HudElementBuffBar:init(parent, draw_layer, start_scale, filter)
     }
 end
 
+-- @TODO: use new BuffBar class to get filter
+
+
 -- -------------------------------
 -- ------- Event Functions -------
 -- -------------------------------
 
 function HudElementBuffBar:event_player_buff_added(player, buff_instance)
-    if self._filter and self._filter[buff_instance._template_name] then
+    local filter = self:_filter()
+    if filter and filter[buff_instance._template_name] then
         HudElementBuffBar.super.event_player_buff_added(self, player, buff_instance)
     end
 end
 
 function HudElementBuffBar:event_player_buff_stack_added(player, buff_instance)
-    if self._filter and self._filter[buff_instance._template_name] then
+    local filter = self:_filter()
+    if filter and filter[buff_instance._template_name] then
         HudElementBuffBar.super.event_player_buff_stack_added(self, player, buff_instance)
     end
 end
@@ -47,6 +53,9 @@ end
 -- -------------------------------
 -- ------ Private Functions ------
 -- -------------------------------
+function HudElementBuffBar:_filter()
+    return self._options.filter
+end
 
 function HudElementBuffBar:_sync_current_active_buffs(buffs)
     if not buffs then

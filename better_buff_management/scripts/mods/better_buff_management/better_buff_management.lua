@@ -4,7 +4,9 @@ local mod = get_mod('better_buff_management')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/table')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/mod')
 local HudElementBuffBar = mod:io_dofile(
-'better_buff_management/scripts/mods/better_buff_management/hud/hud_element_buff_bar')
+    'better_buff_management/scripts/mods/better_buff_management/hud/hud_element_buff_bar')
+local HudElementBuffBarOptions = mod:io_dofile(
+    'better_buff_management/scripts/mods/better_buff_management/hud/hud_element_buff_bar_options')
 
 local management_window = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/window'):new()
 
@@ -50,26 +52,13 @@ local function remove_buff_bar_hud_definitions(definitions)
     definitions = table.to_array(definitions)
 end
 
-local function get_filter_for_bar(buffs_data, bar_name)
-    local filter_data = table.filter(buffs_data, function(filter_data)
-        return filter_data.bar_name == bar_name and not filter_data.is_hidden
-    end)
-
-    if table.is_nil_or_empty(filter_data) then
-        return nil
-    end
-
-    return table.map(filter_data, function(_)
-        return true
-    end)
-end
-
 local function add_buff_bar_hud_definitions(definitions)
     local buffs_data = mod:get(BUFFS_DATA_SETTING_ID)
     local bars = mod:get(BARS_SETTING_ID)
 
     if not table.is_nil_or_empty(buffs_data) and not table.is_nil_or_empty(bars) then
         for _, bar_name in ipairs(bars) do
+            local options = HudElementBuffBarOptions:new(bar_name, buffs_data)
             table.insert(definitions, {
                 package = 'packages/ui/hud/player_buffs/player_buffs',
                 use_retained_mode = true,
@@ -81,7 +70,7 @@ local function add_buff_bar_hud_definitions(definitions)
                     'alive',
                     'communication_wheel'
                 },
-                buffs_filter = get_filter_for_bar(buffs_data, bar_name)
+                options = options
             })
         end
     end
@@ -107,6 +96,7 @@ end
 -- ------- Public Functions ------
 -- -------------------------------
 
+-- function used when toggle keybind is changed
 mod.configure_buffs = function()
     if management_window.is_open then
         management_window:close()
@@ -148,8 +138,8 @@ mod:hook('UIHud', '_add_element', function(func, self, definition, elements, ele
     if definition.class_name:starts_with('HudElementBuffBar') then
         local draw_layer = 0
         local hud_scale = definition.use_hud_scale and (self._hud_scale ~= nil and self:_hud_scale()) or
-        RESOLUTION_LOOKUP.scale
-        local hud_element = HudElementBuffBar:new(self, draw_layer, hud_scale, definition.buffs_filter)
+            RESOLUTION_LOOKUP.scale
+        local hud_element = HudElementBuffBar:new(self, draw_layer, hud_scale, definition.options)
         hud_element.__class_name = definition.class_name
         elements[definition.class_name] = hud_element
         table.insert(elements_array, hud_element)

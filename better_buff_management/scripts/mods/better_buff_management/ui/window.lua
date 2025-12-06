@@ -5,6 +5,7 @@ mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/com
 local BUFF_TEMPLATES = require('scripts/settings/buff/buff_templates')
 local MASTER_ITEMS = require('scripts/backend/master_items')
 
+local BuffBar = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/models/buff_bar')
 local BuffData = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/models/buff_data')
 
 local SettingsComponent = mod:io_dofile(
@@ -21,6 +22,7 @@ local ERROR_PREFIX = ('[%s][%s]'):format(MOD_NAME, CLASS_NAME)
 local ERRORS = {
 }
 
+local BUFF_BARS_SETTING_ID = 'buff_bars'
 local BUFFS_DATA_SETTING_ID = 'buffs_data'
 
 -- -------------------------------
@@ -78,6 +80,22 @@ end
 -- -------------------------------
 -- ------ Private Functions ------
 -- -------------------------------
+
+function ManagementWindow:_load_buff_bars()
+    local buff_bars = {}
+    local raw_buff_bars = mod:get(BUFF_BARS_SETTING_ID)
+
+    if table.is_nil_or_empty(raw_buff_bars) then
+        return
+    end
+
+    local buffs_with_no_template = {}
+    for key, bar in pairs(raw_buff_bars) do
+        if bar and bar['filter'] ~= nil then
+
+        end
+    end
+end
 
 function ManagementWindow:_load_buffs_data()
     local buffs_data = {}

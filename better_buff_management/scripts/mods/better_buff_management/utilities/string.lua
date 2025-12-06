@@ -1,5 +1,5 @@
 function string.capitalize(self)
-    return self:sub(1,1):upper() .. self:sub(2):lower()
+    return self:sub(1, 1):upper() .. self:sub(2):lower()
 end
 
 function string.is_whitespace(self)
