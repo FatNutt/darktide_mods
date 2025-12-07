@@ -16,27 +16,6 @@ local ERRORS = {
 -- -------------------------------
 -- ------- Local Functions -------
 -- -------------------------------
-local function validate_params(params)
-    if type(params) ~= 'table' then
-        error(ERRORS.PARAMS_NOT_TABLE, 1)
-    end
-
-    if table.size(params) == 0 then
-        error(ERRORS.PARAMS_TABLE_EMPTY, 1)
-    end
-
-    if params.filter == nil then
-        error(ERRORS.PARAMS_IS_MISSING:format('filter'), 1)
-    end
-
-    if params.direction == nil then
-        error(ERRORS.PARAMS_IS_MISSING:format('direction'), 1)
-    end
-
-    if params.alignment == nil then
-        error(ERRORS.PARAMS_IS_MISSING:format('alignment'), 1)
-    end
-end
 
 -- -------------------------------
 -- --------- Constructor ---------
@@ -55,11 +34,9 @@ BuffBar.ALIGNMENTS = {
 }
 
 function BuffBar:init(params)
-    validate_params(params)
-
-    self.filter = params.filter
-    self.direction = params.direction
-    self.alignment = params.alignment
+    self.filter = params ~= nil and params.filter ~= nil and params.filter or {}
+    self.direction = params ~= nil and params.direction ~= nil and params.direction or BuffBar.DIRECTIONS.HORIZONTAL
+    self.alignment = params ~= nil and params.alignment ~= nil and params.alignment or BuffBar.ALIGNMENTS.LEFT
 end
 
 BuffBar.DEFAULT = BuffBar:new({

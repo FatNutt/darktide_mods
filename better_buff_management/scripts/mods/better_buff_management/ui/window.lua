@@ -1,6 +1,8 @@
 local mod = get_mod('better_buff_management')
+mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/debug')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/components/base_component')
 
+local BuffsProvider = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/lib/buffs_provider')
 local BuffBarsProvider = mod:io_dofile(
     'better_buff_management/scripts/mods/better_buff_management/lib/buff_bars_provider')
 
@@ -26,12 +28,14 @@ local ERRORS = {
 -- --------- Constructor ---------
 -- -------------------------------
 local ManagementWindow = class(CLASS_NAME, 'BaseComponent')
-function ManagementWindow:init()
+function ManagementWindow:init(params)
     ManagementWindow.super.init(self)
+
+    self._buffs_provider = params and params.buffs_provider or BuffsProvider:new()
+    self._bars_provider = params and params.bars_provider or BuffBarsProvider:new()
 
     self.is_open = false
     self._first_open = true
-    self._bars = nil
 
     self._settings_component = nil
     self._buff_bars_component = nil
@@ -43,19 +47,25 @@ end
 -- -------------------------------
 
 function ManagementWindow:_load_data()
-    self._bars = BuffBarsProvider.smart_load_buff_bars()
+    self._bars = self._bars_provider:smart_load_buff_bars()
 end
 
 function ManagementWindow:_save_data()
-    BuffBarsProvider.save_buff_bars(self._bars)
+    self._bars_provider:save_buff_bars(self._bars)
     self._bars = nil
 end
 
 function ManagementWindow:_create_ui_components()
     local settings_widgets = mod:get_internal_data('options').widgets
     self._settings_component = SettingsComponent:new(settings_widgets)
-    self._buff_bars_component = BuffBarsComponent:new(self._bars)
-    self._search_component = SearchComponent:new(self._bars)
+
+    local component_params = {
+        buffs_provider = self._buffs_provider,
+        bars_provider = self._bars_provider,
+        bars = self._bars,
+    }
+    self._buff_bars_component = BuffBarsComponent:new(component_params)
+    self._search_component = SearchComponent:new(component_params)
 end
 
 function ManagementWindow:_destroy_ui_components()

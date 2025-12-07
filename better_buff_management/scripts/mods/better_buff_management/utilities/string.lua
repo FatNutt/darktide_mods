@@ -38,3 +38,7 @@ end
 function string.sanitize(self, pattern)
     return self:gsub(pattern, '')
 end
+
+function string.starts_with(self, word)
+    return self:sub(1, #word) == word
+end

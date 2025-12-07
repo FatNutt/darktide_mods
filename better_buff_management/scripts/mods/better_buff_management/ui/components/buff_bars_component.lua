@@ -4,8 +4,11 @@ mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilit
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/components/base_buff_component')
 local UiSettings = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/settings')
 
-local BuffBar = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/models/buff_bar')
+local BuffsProvider = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/lib/buffs_provider')
+local BuffBarsProvider = mod:io_dofile(
+    'better_buff_management/scripts/mods/better_buff_management/lib/buff_bars_provider')
 
+local BuffBar = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/models/buff_bar')
 
 local MOD_NAME = mod:localize('mod_name')
 local CLASS_NAME = 'BuffBarsComponent'
@@ -25,47 +28,15 @@ local REMOVE_BUFF_FROM_BUFF_BAR_LOC_ID = 'remove_buff_from_buff_bar'
 -- ------- Local Functions -------
 -- -------------------------------
 
-local function _update_buffs(window_id, bar_data)
-    local same_line_flag = false
-
-    local sorted_buffs = table.sorted_by_keys(bar_data.filter)
-    for _, kvp in pairs(sorted_buffs) do
-        local buff_name = kvp.key
-        local buff_data = kvp.value
-
-        if same_line_flag then
-            Imgui.same_line()
-        end
-
-        local buff_id = Imgui.make_id(buff_name)
-        local buff_window_id = ('%s_%s'):format(window_id, buff_id)
-        Imgui.begin_child_window(buff_window_id, UiSettings.BUFF_WINDOW_SIZE[1], UiSettings.BUFF_WINDOW_SIZE[2], false)
-
-        Imgui.image_button(buff_data.icon, UiSettings.BUFF_IMAGE_SIZE[1], UiSettings.BUFF_IMAGE_SIZE[2], 255, 255, 255, 1)
-
-        local remove = Imgui.button(mod:localize(REMOVE_BUFF_FROM_BUFF_BAR_LOC_ID))
-
-        Imgui.end_child_window()
-
-        if Imgui.is_item_hovered() then
-            Imgui.begin_tool_tip()
-            Imgui.text(buff_name)
-            Imgui.end_tool_tip()
-        end
-
-        if remove then
-            bar_data.filter[buff_name] = nil
-        end
-        same_line_flag = true
-    end
-end
-
 -- -------------------------------
 -- --------- Constructor ---------
 -- -------------------------------
 local BuffBarsComponent = class(CLASS_NAME, 'BaseBuffComponent')
-function BuffBarsComponent:init(bars)
-    BuffBarsComponent.super.init(self, bars)
+function BuffBarsComponent:init(params)
+    BuffBarsComponent.super.init(self, params)
+
+    self._buffs_provider = params and params.buffs_provider or BuffsProvider:new()
+    self._bars_provider = params and params.bars_provider or BuffBarsProvider:new(self._buffs_provider)
 
     self._new_bar_name = ''
     self._selected_bar_index = nil
@@ -82,6 +53,44 @@ function BuffBarsComponent:_bar_names()
     return bar_names
 end
 
+function BuffBarsComponent:_update_buffs(window_id, bar_data)
+    local same_line_flag = false
+
+    table.sort(bar_data.filter)
+    for _, buff_name in pairs(bar_data.filter) do
+        local buff_data = self._buffs_provider:try_get_buff(buff_name)
+
+        if buff_data ~= nil then
+            if same_line_flag then
+                Imgui.same_line()
+            end
+
+            local buff_id = Imgui.make_id(buff_name)
+            local buff_window_id = ('%s_%s'):format(window_id, buff_id)
+            Imgui.begin_child_window(buff_window_id, UiSettings.BUFF_WINDOW_SIZE[1], UiSettings.BUFF_WINDOW_SIZE[2],
+                false)
+
+            Imgui.image_button(buff_data.icon, UiSettings.BUFF_IMAGE_SIZE[1], UiSettings.BUFF_IMAGE_SIZE[2], 255, 255,
+                255, 1)
+
+            local remove = Imgui.button(mod:localize(REMOVE_BUFF_FROM_BUFF_BAR_LOC_ID))
+
+            Imgui.end_child_window()
+
+            if Imgui.is_item_hovered() then
+                Imgui.begin_tool_tip()
+                Imgui.text(buff_name)
+                Imgui.end_tool_tip()
+            end
+
+            if remove then
+                bar_data.filter[buff_name] = nil
+            end
+            same_line_flag = true
+        end
+    end
+end
+
 function BuffBarsComponent:_update_create_bar()
     local create_bar = Imgui.button(mod:localize(CREATE_BUFF_BAR_BUTTON_LOC_ID))
     Imgui.same_line()
@@ -92,7 +101,7 @@ function BuffBarsComponent:_update_create_bar()
             table.insert(self._bar, self._new_bar_name, BuffBar:new({
                 filter = {},
                 direction = BuffBar.DIRECTIONS.HORIZONTAL,
-                alignment = BuffBar.ALIGNMENT.LEFT
+                alignment = BuffBar.ALIGNMENTS.LEFT
             }))
         end
 
@@ -144,7 +153,7 @@ function BuffBarsComponent:_update_bar_windows()
                 'always_auto_resize', 'horizontal_scrollbar')
 
             if not table.is_nil_or_empty(bar_data) then
-                _update_buffs(window_id, bar_data)
+                self:_update_buffs(window_id, bar_data)
             end
 
             Imgui.end_child_window()

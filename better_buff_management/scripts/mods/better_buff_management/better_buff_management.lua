@@ -1,24 +1,30 @@
 local HudElementsDefinitions = require('scripts/ui/hud/hud_elements_player')
 
 local mod = get_mod('better_buff_management')
+mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/debug')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/table')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/mod')
+
 local HudElementBuffBar = mod:io_dofile(
     'better_buff_management/scripts/mods/better_buff_management/hud/hud_element_buff_bar')
 
-local BuffBarsProvider = mod:io_dofile(
-    'better_buff_management/scripts/mods/better_buff_management/lib/buff_bars_provider')
-
-local management_window = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/window'):new()
+local buffs_provider = mod:io_dofile(
+    'better_buff_management/scripts/mods/better_buff_management/lib/buffs_provider'):new()
+local bars_provider = mod:io_dofile(
+    'better_buff_management/scripts/mods/better_buff_management/lib/buff_bars_provider'):new(buffs_provider)
+local management_window = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/window'):new({
+    buffs_provider = buffs_provider,
+    bars_provider = bars_provider
+})
 
 local TOGGLE_DEFAULT_BAR_SETTING_ID = 'toggle_default_bar'
 
 local HUD_ELEMENT_PLAYER_BUFFS = 'HudElementPlayerBuffs'
 local _, PlayerBuffsDefinition = table.find_by_key(HudElementsDefinitions, 'class_name', HUD_ELEMENT_PLAYER_BUFFS)
 
--- -------------------------------
--- ------- Local Functions -------
--- -------------------------------
+-- -- -------------------------------
+-- -- ------- Local Functions -------
+-- -- -------------------------------
 
 local function recreate_hud()
     local ui_manager = Managers.ui
@@ -52,7 +58,11 @@ local function remove_buff_bar_hud_definitions(definitions)
 end
 
 local function add_buff_bar_hud_definitions(definitions)
-    local bars = BuffBarsProvider.smart_load_buff_bars()
+    if mod:is_in_hub() then
+        return
+    end
+
+    local bars = buff_bars_provider:smart_load_buff_bars()
 
     if not table.is_nil_or_empty(bars) then
         for bar_name, bar_data in ipairs(bars) do
@@ -89,9 +99,9 @@ local function add_or_remove_default_buff_bar(definitions)
     end
 end
 
--- -------------------------------
--- ------- Public Functions ------
--- -------------------------------
+-- -- -------------------------------
+-- -- ------- Public Functions ------
+-- -- -------------------------------
 
 mod.configure_buffs = function()
     if management_window.is_open then
@@ -113,9 +123,9 @@ mod.update = function()
     management_window:update()
 end
 
--- -- -------------------------------
--- -- ------------ Hooks ------------
--- -- -------------------------------
+-- -- -- -------------------------------
+-- -- -- ------------ Hooks ------------
+-- -- -- -------------------------------
 
 mod:hook('UIManager', 'using_input', function(func, ...)
     return management_window.is_open or func(...)

@@ -13,6 +13,16 @@ function table.keys(tbl)
     return keys
 end
 
+function table.values(tbl)
+    local values = {}
+
+    for _, value in pairs(tbl) do
+        table.insert(values, value)
+    end
+
+    return values
+end
+
 function table.is_nil_or_empty(tbl)
     return tbl == nil or table.is_empty(tbl)
 end

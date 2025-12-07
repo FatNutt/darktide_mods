@@ -6,9 +6,9 @@ mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/com
 -- --------- Constructor ---------
 -- -------------------------------
 local BaseBuffComponent = class('BaseBuffComponent', 'BaseComponent')
-function BaseBuffComponent:init(bars)
-    BaseBuffComponent.super.init(self)
-    self._bars = bars
+function BaseBuffComponent:init(params)
+    BaseBuffComponent.super.init(params)
+    self._bars = params and params.bars or nil
 end
 
 -- -------------------------------

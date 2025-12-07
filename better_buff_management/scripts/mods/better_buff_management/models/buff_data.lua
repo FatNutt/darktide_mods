@@ -22,8 +22,8 @@ local ERRORS = {
 -- -------------------------------
 local BuffData = class(CLASS_NAME)
 function BuffData:init(params)
-    self.icon = params.icon
-    self.is_hidden = params.is_hidden or false
+    self.icon = params ~= nil and params.icon ~= nil and params.icon or nil
+    self.is_hidden = params ~= nil and params.is_hidden ~= nil and params.is_hidden or false
 end
 
 -- -------------------------------

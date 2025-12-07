@@ -16,7 +16,6 @@ local ERROR_PREFIX = ('[%s][%s]'):format(MOD_NAME, CLASS_NAME)
 local ERRORS = {
 }
 
-local BARS_SETTING_ID = 'bars'
 local DESELECT_VISIBLE_ICONS_LOC_ID = 'unselect_all_icons'
 local SELECT_VISIBLE_ICONS_LOC_ID = 'select_all_icons'
 local SEARCH_LOC_ID = 'search'
@@ -27,25 +26,17 @@ local ADD_SELECTED_BUFFS_BAR_LOC_ID = 'add_selected_buffs_bar'
 -- ------- Local Functions -------
 -- -------------------------------
 
-local function _init_search_data()
-    local buffs = BuffsProvider.get_all_buffs()
-
-    local search_data = {}
-    for key, value in pairs(buffs) do
-        search_data[key] = { buff = value, is_selected = false }
-    end
-    return search_data
-end
-
 -- -------------------------------
 -- --------- Constructor ---------
 -- -------------------------------
 local SearchComponent = class(CLASS_NAME, 'BaseBuffComponent')
-function SearchComponent:init(bars)
-    SearchComponent.super.init(self, bars)
+function SearchComponent:init(params)
+    SearchComponent.super.init(self, params)
 
-    self._bars = bars
-    self._search_data = _init_search_data()
+    self._buffs_provider = params and params.buffs_provider or BuffsProvider:new()
+    self._bars_provider = params and params.bars_provider or BuffBarsProvider:new(self._buffs_provider)
+
+    self._search_data = self:_init_search_data()
     self._search_text = ''
     self._selected_bar_index = nil
 end
@@ -58,6 +49,23 @@ function SearchComponent:_bar_names()
     table.sort(bar_names)
 
     return bar_names
+end
+
+function SearchComponent:_init_search_data()
+    local search_data = {}
+
+    local buffs = self._buffs_provider:get_all_buffs()
+    if table.is_nil_or_empty(buffs) then
+        return search_data
+    end
+
+    for key, value in pairs(buffs) do
+        if value and value.icon then
+            search_data[key] = { icon = value.icon, is_selected = false }
+        end
+    end
+
+    return search_data
 end
 
 function SearchComponent:_is_filtered_buff(buff_name)
@@ -102,10 +110,10 @@ function SearchComponent:_draw_buff(buff_name, search_data)
     local button_id = ('%s_%s_IMAGE_BUTTON'):format(self.__class_name, buff_name)
     Imgui.push_id(button_id)
     if search_data.is_selected then
-        is_clicked = Imgui.image_button(search_data.buff.icon, UiSettings.BUFF_IMAGE_SIZE[1],
+        is_clicked = Imgui.image_button(search_data.icon, UiSettings.BUFF_IMAGE_SIZE[1],
             UiSettings.BUFF_IMAGE_SIZE[2], 266, 200, 0, 1)
     else
-        is_clicked = Imgui.image_button(search_data.buff.icon, UiSettings.BUFF_IMAGE_SIZE[1],
+        is_clicked = Imgui.image_button(search_data.icon, UiSettings.BUFF_IMAGE_SIZE[1],
             UiSettings.BUFF_IMAGE_SIZE[2], 255, 255, 255, 1)
     end
     Imgui.pop_id()
@@ -122,11 +130,12 @@ function SearchComponent:_draw_buff(buff_name, search_data)
 end
 
 function SearchComponent:_update_search_window()
-    local sorted_data = table.sorted_by_keys(self._search_data)
-
     local same_line_flag = 1
     Imgui.begin_child_window(self.__class_name .. '_SEARCH_WINDOW', UiSettings.SEARCH_WINDOW_SIZE[1],
         UiSettings.SEARCH_WINDOW_SIZE[2], true, 'always_auto_resize', 'horizontal_scrollbar')
+
+    local sorted_data = table.sorted_by_keys(self._search_data)
+
     for _, kvp in pairs(sorted_data) do
         local buff_name = kvp.key
         local search_data = kvp.value
@@ -149,9 +158,10 @@ function SearchComponent:_update_add_inputs()
 
     if Imgui.button(mod:localize(ADD_SELECTED_BUFFS_BAR_LOC_ID)) and self._selected_bar_index then
         local selected_bar = bar_names[self._selected_bar_index]
+
         for buff_name, search_data in pairs(self._search_data) do
             if self:_is_filtered_buff(buff_name) and search_data.is_selected then
-                table.insert(self._bars[selected_bar], buff_name, search_data.buff)
+                table.insert(self._bars[selected_bar].filter, buff_name)
             end
         end
         self:_toggle_all_selected(false)
