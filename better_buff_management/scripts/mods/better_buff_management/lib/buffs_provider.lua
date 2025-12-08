@@ -2,6 +2,7 @@ local mod = get_mod('better_buff_management')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/debug')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/string')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/table')
+mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/profile')
 
 local BUFF_TEMPLATES = require('scripts/settings/buff/buff_templates')
 local MASTER_ITEMS = require('scripts/backend/master_items')
@@ -21,7 +22,26 @@ local ERRORS = {
 -- -------------------------------
 -- ------- Local Functions -------
 -- -------------------------------
-local function get_icon(buff_template)
+
+-- -------------------------------
+-- --------- Constructor ---------
+-- -------------------------------
+local BuffsProvider = class(CLASS_NAME)
+function BuffsProvider:init()
+    self._cached_items = MASTER_ITEMS.get_cached()
+    self._buffs = nil
+
+    mod.profile_start('get_all_buffs()')
+
+    self:get_all_buffs()
+
+    mod.profile_end('get_all_buffs()')
+end
+
+-- -------------------------------
+-- ------ Private Functions ------
+-- -------------------------------
+function BuffsProvider:_get_icon(buff_template)
     if buff_template.hide_icon_in_hud then
         return nil
     end
@@ -41,13 +61,11 @@ local function get_icon(buff_template)
         return BUFF_TEMPLATES[parent].hud_icon
     end
 
-    local cached_items = MASTER_ITEMS.get_cached()
-
-    if table.is_nil_or_empty(cached_items) then
+    if table.is_nil_or_empty(self._cached_items) then
         return nil
     end
 
-    for _, item in pairs(cached_items) do
+    for _, item in pairs(self._cached_items) do
         if item.trait == buff_name then
             if item.icon and item.icon ~= '' then
                 return item.icon
@@ -59,26 +77,6 @@ local function get_icon(buff_template)
 end
 
 -- -------------------------------
--- --------- Constructor ---------
--- -------------------------------
-local BuffsProvider = class(CLASS_NAME)
-function BuffsProvider:init()
-    self._buffs = nil
-
-    local start_time = os.clock()
-
-    self:get_all_buffs()
-
-    local end_time = os.clock()
-    local execution_time_ms = (end_time - start_time) * 1000
-    print(string.format("Buffs loading took %.3f milliseconds", execution_time_ms))
-end
-
--- -------------------------------
--- ------ Private Functions ------
--- -------------------------------
-
--- -------------------------------
 -- ------- Public Functions ------
 -- -------------------------------
 
@@ -88,7 +86,7 @@ function BuffsProvider:get_all_buffs()
 
         for buffCategory, template in pairs(BUFF_TEMPLATES) do
             if not (buffCategory == "PREDICTED" or buffCategory == "NON_PREDICTED") then
-                local icon = get_icon(template)
+                local icon = self:_get_icon(template)
 
                 if icon and self._buffs[template.name] == nil then
                     self._buffs[template.name] = BuffData:new({
@@ -107,9 +105,7 @@ function BuffsProvider:try_get_buff(buff_name)
         return nil
     end
 
-    local buff = self._buffs[buff_name]
-
-    return buff ~= nil and buff or nil
+    return self._buffs[buff_name]
 end
 
 function BuffsProvider:validate_buff(buff_name)

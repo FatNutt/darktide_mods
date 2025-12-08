@@ -2,6 +2,7 @@ local mod = get_mod('better_buff_management')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/debug')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/string')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/table')
+mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/profile')
 
 local BuffBar = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/models/buff_bar')
 
@@ -23,15 +24,6 @@ local BUFF_BARS_SETTING_ID = 'buff_bars'
 -- -------------------------------
 -- ------- Local Functions -------
 -- -------------------------------
-local function update_filter(filter)
-    for _, buff_name in ipairs(filter) do
-        local buff = BuffsProvider.try_get_buff(buff_name)
-
-        if buff then
-            filter[buff_name] = data
-        end
-    end
-end
 
 -- -------------------------------
 -- --------- Constructor ---------
@@ -40,11 +32,24 @@ local BuffBarsProvider = class(CLASS_NAME)
 function BuffBarsProvider:init(buffs_provider)
     self._buffs_provider = buffs_provider or BuffsProvider:new()
     self._bars = nil
+
+    mod.profile_start('smart_load_buff_bars()')
+    self:smart_load_buff_bars()
+    mod.profile_end('smart_load_buff_bars()')
 end
 
 -- -------------------------------
 -- ------ Private Functions ------
 -- -------------------------------
+function BuffBarsProvider:_update_filter(filter)
+    for _, buff_name in ipairs(filter) do
+        local buff = self._buffs_provider:try_get_buff(buff_name)
+
+        if buff == nil then
+            filter[buff_name] = nil
+        end
+    end
+end
 
 -- -------------------------------
 -- ------- Public Functions ------
@@ -62,7 +67,11 @@ function BuffBarsProvider:load_from_old_buff_bars()
 
         if buff then
             if bars[buff_data.bar_name] == nil then
-                bars[buff_data.bar_name] = BuffBar:new()
+                bars[buff_data.bar_name] = BuffBar:new({
+                    filter = {},
+                    direction = BuffBar.DIRECTIONS.HORIZONTAL,
+                    alignment = BuffBar.ALIGNMENTS.VERTICAL
+                })
             end
 
             table.insert(bars[buff_data.bar_name].filter, buff_name)
@@ -83,42 +92,28 @@ function BuffBarsProvider:load_buff_bars()
     for bar_name, data in pairs(raw_bars_data) do
         local bar = BuffBar:new(data)
 
-        update_filter(bar.filter)
+        self:_update_filter(bar.filter)
 
-        table.insert(bars, bar_name, bar)
+        bars[bar_name] = bar
     end
     return bars
 end
 
 function BuffBarsProvider:smart_load_buff_bars()
     if self._bars == nil then
-        local start_time = os.clock()
+        self._bars = {}
 
         if true or mod:get(BUFFS_DATA_SETTING_ID) and not mod:get(BUFF_BARS_SETTING_ID) then
             self._bars = self:load_from_old_buff_bars()
         else
             self._bars = self:load_buff_bars()
         end
-
-        local end_time = os.clock()
-        local execution_time_ms = (end_time - start_time) * 1000
-        print(string.format("Buff bars loading took %.2f milliseconds", execution_time_ms))
     end
     return self._bars
 end
 
 function BuffBarsProvider:save_buff_bars()
-    local save_data = {}
-
-    if not table.is_nil_or_empty(self._bars) then
-        for bar_id, data in pairs(self._bars) do
-            if not string.is_nil_or_whitespace(data.bar_name) then
-                save_data[bar_id] = data:save_data()
-            end
-        end
-    end
-
-    mod:set(BUFF_BARS_SETTING_ID, save_data)
+    mod:set(BUFF_BARS_SETTING_ID, self._bars)
 end
 
 return BuffBarsProvider

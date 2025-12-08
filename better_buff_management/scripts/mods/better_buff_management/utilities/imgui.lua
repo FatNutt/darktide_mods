@@ -217,5 +217,5 @@ Imgui.ided_input_text = function(...)
 end
 
 Imgui.make_id = function(name)
-    return string.to_pascal_case(bar_name, ' _'):upper()
+    return string.to_pascal_case(name, ' _'):upper()
 end

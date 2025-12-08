@@ -7,6 +7,8 @@ local UiSettings = mod:io_dofile('better_buff_management/scripts/mods/better_buf
 
 local BuffsProvider = mod:io_dofile(
     'better_buff_management/scripts/mods/better_buff_management/lib/buffs_provider')
+local BuffBarsProvider = mod:io_dofile(
+    'better_buff_management/scripts/mods/better_buff_management/lib/buff_bars_provider')
 
 
 local MOD_NAME = mod:localize('mod_name')
@@ -169,7 +171,7 @@ function SearchComponent:_update_add_inputs()
     end
     Imgui.same_line()
 
-    self._selected_bar_index = Imgui.combo(self.__class_name .. '_SELECT_BAR_INPUT', bars, self._selected_bar_index)
+    self._selected_bar_index = Imgui.combo(self.__class_name .. '_SELECT_BAR_INPUT', bar_names, self._selected_bar_index)
 end
 
 -- -------------------------------

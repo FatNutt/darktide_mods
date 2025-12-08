@@ -62,10 +62,10 @@ local function add_buff_bar_hud_definitions(definitions)
         return
     end
 
-    local bars = buff_bars_provider:smart_load_buff_bars()
+    local bars = bars_provider:smart_load_buff_bars()
 
     if not table.is_nil_or_empty(bars) then
-        for bar_name, bar_data in ipairs(bars) do
+        for bar_name, bar_data in pairs(bars) do
             table.insert(definitions, {
                 package = 'packages/ui/hud/player_buffs/player_buffs',
                 use_retained_mode = true,

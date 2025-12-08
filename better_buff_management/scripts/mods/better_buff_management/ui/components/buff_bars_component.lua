@@ -98,11 +98,11 @@ function BuffBarsComponent:_update_create_bar()
 
     if not string.is_nil_or_whitespace(self._new_bar_name) and create_bar then
         if not table.contains(self:_bar_names(), self._new_bar_name) then
-            table.insert(self._bar, self._new_bar_name, BuffBar:new({
+            self._bar[self._new_bar_name] = BuffBar:new({
                 filter = {},
                 direction = BuffBar.DIRECTIONS.HORIZONTAL,
                 alignment = BuffBar.ALIGNMENTS.LEFT
-            }))
+            })
         end
 
         self._new_bar_name = ''
@@ -144,8 +144,9 @@ function BuffBarsComponent:_update_bar_windows()
         return
     end
 
-    for bar_name, bar_data in ipairs(self._bars) do
+    for bar_name, bar_data in pairs(self._bars) do
         local bar_id = Imgui.make_id(bar_name)
+
         Imgui.push_id(('%s_%s'):format(self.__class_name, bar_id))
         if Imgui.collapsing_header(bar_name) then
             local window_id = ('%s_%s'):format(self.__class_name, bar_id)
