@@ -35,9 +35,9 @@ local TOGGLE_DEFAULT_BAR_SETTING_ID = 'toggle_default_bar'
 local HUD_ELEMENT_PLAYER_BUFFS = 'HudElementPlayerBuffs'
 local _, PlayerBuffsDefinition = table.find_by_key(HudElementsDefinitions, 'class_name', HUD_ELEMENT_PLAYER_BUFFS)
 
--- -- -------------------------------
--- -- ------- Local Functions -------
--- -- -------------------------------
+-- -------------------------------
+-- ------- Local Functions -------
+-- -------------------------------
 
 local function recreate_hud()
     local ui_manager = Managers.ui
@@ -112,9 +112,9 @@ local function add_or_remove_default_buff_bar(definitions)
     end
 end
 
--- -- -------------------------------
--- -- ------- Public Functions ------
--- -- -------------------------------
+-- -------------------------------
+-- ------- Public Functions ------
+-- -------------------------------
 
 mod.configure_buffs = function()
     if management_window.is_open then
@@ -136,9 +136,9 @@ mod.update = function()
     management_window:update()
 end
 
--- -- -- -------------------------------
--- -- -- ------------ Hooks ------------
--- -- -- -------------------------------
+-- -------------------------------
+-- ------------ Hooks ------------
+-- -------------------------------
 
 mod:hook('UIManager', 'using_input', function(func, ...)
     return management_window.is_open or func(...)
