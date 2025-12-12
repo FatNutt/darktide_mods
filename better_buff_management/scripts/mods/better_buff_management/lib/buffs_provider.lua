@@ -13,7 +13,6 @@
 --]]
 
 local mod = get_mod('better_buff_management')
-mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/debug')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/string')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/table')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/profile')
@@ -42,35 +41,42 @@ local ERRORS = {
 -- -------------------------------
 local BuffsProvider = class(CLASS_NAME)
 function BuffsProvider:init()
-    self._cached_items = MASTER_ITEMS.get_cached()
-
-    mod.profile_start('BuffsProvider:_build_parent_lookup()')
-    self:_build_parent_lookup()
-    mod.profile_end('BuffsProvider:_build_parent_lookup()')
-
-    mod.profile_start('BuffsProvider:_build_trait_index()')
-    self:_build_trait_index()
-    mod.profile_end('BuffsProvider:_build_trait_index()')
-
-    mod.profile_start('BuffsProvider:_populate_buffs()')
-    self:_populate_buffs()
-    mod.profile_end('BuffsProvider:_populate_buffs()')
+    self:_build()
 end
 
 -- -------------------------------
 -- ------ Private Functions ------
 -- -------------------------------
+function BuffsProvider:_build_templates_index(force)
+    force = force or false
+    if not force and self._buff_templates then return end
+
+    self._buff_templates = mod:persistent_table('buff_templates')
+    for buffCategory, template in pairs(BUFF_TEMPLATES) do
+        if not (buffCategory == "PREDICTED" or buffCategory == "NON_PREDICTED") then
+            -- If its not either of the categories above, the category is actually the template name
+
+            if type(template) == 'string' then
+                print(('%s = "%s"'):format(buffCategory, template))
+            else
+                self._buff_templates[buffCategory] = template
+            end
+        end
+    end
+end
+
 -- Builds a reverse lookup: child_buff_template -> parent_name
 -- This allows O(1) lookup when resolving icons for child buffs
 -- Example: "some_buff" -> "some_buff_parent" so we can get parent's hud_icon
-function BuffsProvider:_build_parent_lookup()
-    if self._child_to_parent then return end
+function BuffsProvider:_build_parent_lookup(force)
+    force = force or false
+    if not force and self._child_to_parent then return end
 
     self._child_to_parent = mod:persistent_table('child_parent_index')
 
-    for name, template in pairs(BUFF_TEMPLATES) do
+    for name, template in pairs(self._buff_templates) do
         if template.child_buff_template then
-            self._child_to_parent[template.child_buff_template] = name
+            self._child_to_parent[template.child_buff_template:trim()] = name:trim()
         end
     end
 end
@@ -78,16 +84,16 @@ end
 -- Builds lookup: trait_name -> icon_path from MASTER_ITEMS cache
 -- Some buffs (especially weapon traits) get their icons from items rather than buff templates
 -- This index enables O(1) icon lookup instead of scanning all items
-function BuffsProvider:_build_trait_index()
-    if self._trait_to_icon then return end
+function BuffsProvider:_build_trait_index(force)
+    force = force or false
+    if not force and self._trait_to_icon then return end
 
     self._trait_to_icon = mod:persistent_table('trait_icon_index')
-
     if table.is_nil_or_empty(self._cached_items) then return end
 
     for _, item in pairs(self._cached_items) do
-        if item.trait and item.icon and item.icon ~= '' then
-            self._trait_to_icon[item.trait] = item.icon
+        if item.trait and not item.trait:is_whitespace() and item.icon and item.icon ~= '' then
+            self._trait_to_icon[item.trait:trim()] = item.icon:trim()
         end
     end
 end
@@ -98,15 +104,12 @@ end
 -- 3. Check if this is a child buff and use parent's icon
 -- 4. Fall back to trait-based icon from MASTER_ITEMS
 function BuffsProvider:_get_icon(buff_template)
-    if buff_template.hide_icon_in_hud then
-        return nil
-    end
+    if buff_template == nil then return nil end
+    if type(buff_template) ~= 'table' then return nil end
+    if buff_template.hide_icon_in_hud then return nil end
+    if buff_template.hud_icon then return buff_template.hud_icon end
 
-    if buff_template.hud_icon then
-        return buff_template.hud_icon
-    end
-
-    local buff_name = buff_template.name
+    local buff_name = buff_template.name:trim()
 
     -- Some buffs have "_parent" suffix but reference child templates
     if buff_name:find('_parent') then
@@ -116,7 +119,7 @@ function BuffsProvider:_get_icon(buff_template)
     -- Check if this buff is a child of another buff (use parent's icon)
     local parent_name = self._child_to_parent[buff_name]
     if parent_name then
-        return BUFF_TEMPLATES[parent_name].hud_icon
+        return self:_get_icon(parent_name)
     end
 
     -- Last resort: check if this buff name matches a weapon trait
@@ -127,17 +130,18 @@ function BuffsProvider:_get_icon(buff_template)
     return self._trait_to_icon[buff_name]
 end
 
-function BuffsProvider:_populate_buffs()
-    if self._buffs then return end
+function BuffsProvider:_populate_buffs(force)
+    force = force or false
+    if not force and self._buffs then return end
 
     self._buffs = mod:persistent_table('buffs_cache')
 
-    for buffCategory, template in pairs(BUFF_TEMPLATES) do
+    for buffCategory, template in pairs(self._buff_templates) do
         if not (buffCategory == "PREDICTED" or buffCategory == "NON_PREDICTED") then
             local icon = self:_get_icon(template)
 
-            if icon and self._buffs[template.name] == nil then
-                self._buffs[template.name] = BuffData:new({
+            if icon and self._buffs[template.name:trim()] == nil then
+                self._buffs[template.name:trim()] = BuffData:new({
                     icon = icon
                 })
             end
@@ -145,9 +149,34 @@ function BuffsProvider:_populate_buffs()
     end
 end
 
+function BuffsProvider:_build(force)
+    force = force or false
+
+    mod.profile_start('BuffsProvider:_build_templates_index()')
+    self:_build_templates_index(force)
+    mod.profile_end('BuffsProvider:_build_templates_index()')
+
+    self._cached_items = MASTER_ITEMS.get_cached()
+
+    mod.profile_start('BuffsProvider:_build_parent_lookup()')
+    self:_build_parent_lookup(force)
+    mod.profile_end('BuffsProvider:_build_parent_lookup()')
+
+    mod.profile_start('BuffsProvider:_build_trait_index()')
+    self:_build_trait_index(force)
+    mod.profile_end('BuffsProvider:_build_trait_index()')
+
+    mod.profile_start('BuffsProvider:_populate_buffs()')
+    self:_populate_buffs(force)
+    mod.profile_end('BuffsProvider:_populate_buffs()')
+end
+
 -- -------------------------------
 -- ------- Public Functions ------
 -- -------------------------------
+function BuffsProvider:refresh()
+    self:_build(true)
+end
 
 function BuffsProvider:get_all_buffs()
     return self._buffs
@@ -162,7 +191,7 @@ function BuffsProvider:try_get_buff(buff_name)
 end
 
 function BuffsProvider:validate_buff(buff_name)
-    local template = table.find_by_key(BUFF_TEMPLATES, 'name', buff_name)
+    local template = table.find_by_key(self._buff_templates, 'name', buff_name)
 
     return template and true or false
 end

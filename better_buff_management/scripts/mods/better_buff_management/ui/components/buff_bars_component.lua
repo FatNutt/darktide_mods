@@ -17,11 +17,14 @@ local ERROR_PREFIX = ('[%s][%s]'):format(MOD_NAME, CLASS_NAME)
 local ERRORS = {
 }
 
-local BARS_SETTING_ID = 'bars'
 local CREATE_BUFF_BAR_BUTTON_LOC_ID = 'create_buff_bar_button'
+local IMPORT_BUFF_BAR_BUTTON_LOC_ID = 'import_buff_bar_button'
+local IMPORT_BUFF_BAR_NAME_LOC_ID = 'import_buff_bar_name'
+local IMPORT_BUFF_BAR_DATA_LOC_ID = 'import_buff_bar_data'
 local SELECT_BUFF_BAR_LABEL_LOC_ID = 'select_buff_bar_label'
 local CLEAR_BUFF_BAR_BUTTON_LOC_ID = 'clear_buff_bar_button'
 local DELETE_BUFF_BAR_BUTTON_LOC_ID = 'delete_buff_bar_button'
+local EXPORT_BUFF_BAR_BUTTON_LOC_ID = 'export_buff_bar_button'
 local REMOVE_BUFF_FROM_BUFF_BAR_LOC_ID = 'remove_buff_from_buff_bar'
 
 -- -------------------------------
@@ -39,6 +42,8 @@ function BuffBarsComponent:init(params)
     self._bars_provider = params and params.bars_provider or BuffBarsProvider:new(self._buffs_provider)
 
     self._new_bar_name = ''
+    self._import_bar_name = ''
+    self._import_bar_data = ''
     self._selected_bar_index = nil
 end
 
@@ -57,7 +62,7 @@ function BuffBarsComponent:_update_buffs(window_id, bar_data)
     local same_line_flag = false
 
     table.sort(bar_data.filter)
-    for _, buff_name in pairs(bar_data.filter) do
+    for _, buff_name in ipairs(bar_data.filter) do
         local buff_data = self._buffs_provider:try_get_buff(buff_name)
 
         if buff_data ~= nil then
@@ -109,6 +114,35 @@ function BuffBarsComponent:_update_create_bar()
     end
 end
 
+function BuffBarsComponent:_update_import_bar()
+    local window_id = ('%s_%s'):format(self.__class_name, '_IMPORT_BAR_WINDOW')
+    Imgui.begin_child_window(window_id, UiSettings.IMPORT_BAR_WINDOW_SIZE[1], UiSettings.IMPORT_BAR_WINDOW_SIZE[2], true)
+
+    Imgui.text(mod:localize(IMPORT_BUFF_BAR_NAME_LOC_ID))
+    Imgui.same_line()
+    self._import_bar_name = Imgui.ided_input_text(self.__class_name .. '_BAR_IMPORT_NAME', self._import_bar_name)
+
+    Imgui.text(mod:localize(IMPORT_BUFF_BAR_DATA_LOC_ID))
+    Imgui.same_line()
+    self._import_bar_data = Imgui.ided_input_text(self.__class_name .. '_BAR_IMPORT_DATA', self._import_bar_data)
+
+    Imgui:separator()
+
+    local import_bar = Imgui.button(mod:localize(IMPORT_BUFF_BAR_BUTTON_LOC_ID))
+
+    if not string.is_nil_or_whitespace(self._import_bar_name) and not string.is_nil_or_whitespace(self._import_bar_data) and import_bar then
+        local imported_bar, err = BuffBar.deserialize(self._import_bar_data)
+        if imported_bar then
+            self._bars[self._import_bar_name] = imported_bar
+        end
+
+        self._import_bar_name = ''
+        self._import_bar_data = ''
+    end
+
+    Imgui.end_child_window()
+end
+
 function BuffBarsComponent:_update_clear_or_delete_bar()
     local bar_names = self:_bar_names()
 
@@ -139,27 +173,40 @@ function BuffBarsComponent:_update_clear_or_delete_bar()
     end
 end
 
-function BuffBarsComponent:_update_bar_windows()
+function BuffBarsComponent:_update_buff_filter_window(bar_id, bar_data)
+    local window_id = ('%s_%s'):format(self.__class_name, bar_id)
+    Imgui.begin_child_window(window_id, UiSettings.BAR_WINDOW_SIZE[1], UiSettings.BAR_WINDOW_SIZE[2], true,
+        'always_auto_resize', 'horizontal_scrollbar')
+
+    if not table.is_nil_or_empty(bar_data) then
+        self:_update_buffs(window_id, bar_data)
+    end
+
+    Imgui.end_child_window()
+end
+
+function BuffBarsComponent:_update_bar(bar_name, bar_data)
+    local bar_id = Imgui.make_id(bar_name)
+
+    Imgui.push_id(('%s_%s'):format(self.__class_name, bar_id))
+    if Imgui.collapsing_header(bar_name) then
+        self:_update_buff_filter_window(bar_id, bar_data)
+
+        Imgui.text(mod:localize(EXPORT_BUFF_BAR_BUTTON_LOC_ID))
+        Imgui.same_line()
+        Imgui.ided_input_text(self.__class_name .. '_BAR_EXPORT_INPUT', bar_data:serialize())
+    end
+    Imgui.pop_id()
+end
+
+function BuffBarsComponent:_update_bars()
     if table.is_nil_or_empty(self._bars) then
         return
     end
 
-    for bar_name, bar_data in pairs(self._bars) do
-        local bar_id = Imgui.make_id(bar_name)
-
-        Imgui.push_id(('%s_%s'):format(self.__class_name, bar_id))
-        if Imgui.collapsing_header(bar_name) then
-            local window_id = ('%s_%s'):format(self.__class_name, bar_id)
-            Imgui.begin_child_window(window_id, UiSettings.BAR_WINDOW_SIZE[1], UiSettings.BAR_WINDOW_SIZE[2], true,
-                'always_auto_resize', 'horizontal_scrollbar')
-
-            if not table.is_nil_or_empty(bar_data) then
-                self:_update_buffs(window_id, bar_data)
-            end
-
-            Imgui.end_child_window()
-        end
-        Imgui.pop_id()
+    local bar_names = self:_bar_names()
+    for _, bar_name in pairs(bar_names) do
+        self:_update_bar(bar_name, self._bars[bar_name])
     end
 end
 
@@ -169,8 +216,9 @@ end
 
 function BuffBarsComponent:update()
     self:_update_create_bar()
+    self:_update_import_bar()
     self:_update_clear_or_delete_bar()
-    self:_update_bar_windows()
+    self:_update_bars()
 end
 
 return BuffBarsComponent

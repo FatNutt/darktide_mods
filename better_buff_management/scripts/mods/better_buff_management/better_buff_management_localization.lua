@@ -47,6 +47,15 @@ return {
     create_buff_bar_button = {
         en = 'Create buff bar'
     },
+    import_buff_bar_name = {
+        en = 'Import buff bar name'
+    },
+    import_buff_bar_data = {
+        en = 'Import buff bar data'
+    },
+    import_buff_bar_button = {
+        en = 'Import'
+    },
     select_buff_bar_label = {
         en = 'Select buff bar'
     },
@@ -55,6 +64,9 @@ return {
     },
     delete_buff_bar_button = {
         en = 'Delete'
+    },
+    export_buff_bar_button = {
+        en = 'Export Data'
     },
     remove_buff_from_buff_bar = {
         en = 'Remove'

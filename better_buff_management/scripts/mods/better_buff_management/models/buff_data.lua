@@ -23,7 +23,6 @@ local ERRORS = {
 local BuffData = class(CLASS_NAME)
 function BuffData:init(params)
     self.icon = params ~= nil and params.icon ~= nil and params.icon or nil
-    self.is_hidden = params ~= nil and params.is_hidden ~= nil and params.is_hidden or false
 end
 
 -- -------------------------------
@@ -35,11 +34,7 @@ end
 -- -------------------------------
 
 function BuffData:save_data()
-    return { is_hidden = self.is_hidden }
-end
-
-function BuffData:toggle_hidden()
-    self.is_hidden = not self._is_hidden
+    return {}
 end
 
 return BuffData

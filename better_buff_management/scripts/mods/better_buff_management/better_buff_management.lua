@@ -22,6 +22,7 @@ else
         'better_buff_management/scripts/mods/better_buff_management/lib/buffs_provider'):new()
     bars_provider = mod:io_dofile(
         'better_buff_management/scripts/mods/better_buff_management/lib/buff_bars_provider'):new(buffs_provider)
+
     cached_providers.buffs_provider = buffs_provider
     cached_providers.bars_provider = bars_provider
 end
@@ -91,7 +92,10 @@ local function add_buff_bar_hud_definitions(definitions)
                     'alive',
                     'communication_wheel'
                 },
-                data = bar_data
+                params = {
+                    bar_name = bar_name,
+                    bar_data = bar_data
+                }
             })
         end
     end
@@ -162,7 +166,7 @@ mod:hook('UIHud', '_add_element', function(func, self, definition, elements, ele
         local draw_layer = 0
         local hud_scale = definition.use_hud_scale and (self._hud_scale ~= nil and self:_hud_scale()) or
             RESOLUTION_LOOKUP.scale
-        local hud_element = HudElementBuffBar:new(self, draw_layer, hud_scale, definition.data)
+        local hud_element = HudElementBuffBar:new(self, draw_layer, hud_scale, definition.params)
         hud_element.__class_name = definition.class_name
         elements[definition.class_name] = hud_element
         table.insert(elements_array, hud_element)

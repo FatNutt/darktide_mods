@@ -45,3 +45,7 @@ end
 function string.starts_with(self, word)
     return self:sub(1, #word) == word
 end
+
+function string.trim(self)
+    return self:match("^%s*(.-)%s*$")
+end
