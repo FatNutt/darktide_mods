@@ -103,7 +103,7 @@ function BuffBarsProvider:smart_load_buff_bars()
     if self._bars == nil then
         self._bars = {}
 
-        if true or mod:get(BUFFS_DATA_SETTING_ID) and not mod:get(BUFF_BARS_SETTING_ID) then
+        if mod:get(BUFFS_DATA_SETTING_ID) and not mod:get(BUFF_BARS_SETTING_ID) then
             self._bars = self:load_from_old_buff_bars()
         else
             self._bars = self:load_buff_bars()
