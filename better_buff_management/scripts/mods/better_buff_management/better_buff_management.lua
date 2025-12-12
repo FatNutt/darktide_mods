@@ -141,6 +141,12 @@ mod.update = function()
     management_window:update()
 end
 
+mod.on_game_state_changed = function(status, state_name)
+    if status == 'enter' and state_name == 'StateGameplay' then
+        buffs_provider:refresh()
+    end
+end
+
 -- -------------------------------
 -- ------------ Hooks ------------
 -- -------------------------------
