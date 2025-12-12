@@ -1,7 +1,6 @@
 local HudElementsDefinitions = require('scripts/ui/hud/hud_elements_player')
 
 local mod = get_mod('better_buff_management')
-mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/debug')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/table')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/mod')
 
