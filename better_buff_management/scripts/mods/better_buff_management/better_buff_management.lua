@@ -8,10 +8,23 @@ mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilit
 local HudElementBuffBar = mod:io_dofile(
     'better_buff_management/scripts/mods/better_buff_management/hud/hud_element_buff_bar')
 
-local buffs_provider = mod:io_dofile(
-    'better_buff_management/scripts/mods/better_buff_management/lib/buffs_provider'):new()
-local bars_provider = mod:io_dofile(
-    'better_buff_management/scripts/mods/better_buff_management/lib/buff_bars_provider'):new(buffs_provider)
+local cached_providers = mod:persistent_table('providers')
+
+local buffs_provider
+local bars_provider
+
+if cached_providers.buffs_provider then
+    buffs_provider = cached_providers.buffs_provider
+    bars_provider = cached_providers.bars_provider
+else
+    buffs_provider = mod:io_dofile(
+        'better_buff_management/scripts/mods/better_buff_management/lib/buffs_provider'):new()
+    bars_provider = mod:io_dofile(
+        'better_buff_management/scripts/mods/better_buff_management/lib/buff_bars_provider'):new(buffs_provider)
+    cached_providers.buffs_provider = buffs_provider
+    cached_providers.bars_provider = bars_provider
+end
+
 local management_window = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/window'):new({
     buffs_provider = buffs_provider,
     bars_provider = bars_provider

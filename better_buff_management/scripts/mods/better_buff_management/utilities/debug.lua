@@ -1,4 +1,6 @@
 local mod = get_mod('better_buff_management')
+if mod._debug_initialized then return end
+mod._debug_initialized = true
 
 function mod.dump_keys_from_table(tbl)
     local dump_tbl = {}

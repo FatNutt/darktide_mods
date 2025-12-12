@@ -1,4 +1,7 @@
 local mod = get_mod('better_buff_management')
+if mod._profile_initialized then return end
+mod._profile_initialized = true
+
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/table')
 
 mod.profile_start = function(id)

@@ -33,9 +33,9 @@ function BuffBarsProvider:init(buffs_provider)
     self._buffs_provider = buffs_provider or BuffsProvider:new()
     self._bars = nil
 
-    mod.profile_start('smart_load_buff_bars()')
+    mod.profile_start('BuffBarsProvider:smart_load_buff_bars()')
     self:smart_load_buff_bars()
-    mod.profile_end('smart_load_buff_bars()')
+    mod.profile_end('BuffBarsProvider:smart_load_buff_bars()')
 end
 
 -- -------------------------------

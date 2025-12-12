@@ -29,18 +29,49 @@ local ERRORS = {
 local BuffsProvider = class(CLASS_NAME)
 function BuffsProvider:init()
     self._cached_items = MASTER_ITEMS.get_cached()
-    self._buffs = nil
 
-    mod.profile_start('get_all_buffs()')
+    mod.profile_start('BuffsProvider:_build_parent_lookup()')
+    self:_build_parent_lookup()
+    mod.profile_end('BuffsProvider:_build_parent_lookup()')
 
-    self:get_all_buffs()
+    mod.profile_start('BuffsProvider:_build_trait_index()')
+    self:_build_trait_index()
+    mod.profile_end('BuffsProvider:_build_trait_index()')
 
-    mod.profile_end('get_all_buffs()')
+    mod.profile_start('BuffsProvider:_populate_buffs()')
+    self:_populate_buffs()
+    mod.profile_end('BuffsProvider:_populate_buffs()')
 end
 
 -- -------------------------------
 -- ------ Private Functions ------
 -- -------------------------------
+function BuffsProvider:_build_parent_lookup()
+    if self._child_to_parent then return end
+
+    self._child_to_parent = mod:persistent_table('child_parent_index')
+
+    for name, template in pairs(BUFF_TEMPLATES) do
+        if template.child_buff_template then
+            self._child_to_parent[template.child_buff_template] = name
+        end
+    end
+end
+
+function BuffsProvider:_build_trait_index()
+    if self._trait_to_icon then return end
+
+    self._trait_to_icon = mod:persistent_table('trait_icon_index')
+
+    if table.is_nil_or_empty(self._cached_items) then return end
+
+    for _, item in pairs(self._cached_items) do
+        if item.trait and item.icon and item.icon ~= '' then
+            self._trait_to_icon[item.trait] = item.icon
+        end
+    end
+end
+
 function BuffsProvider:_get_icon(buff_template)
     if buff_template.hide_icon_in_hud then
         return nil
@@ -56,24 +87,34 @@ function BuffsProvider:_get_icon(buff_template)
         buff_name = buff_name:gsub('_parent', '')
     end
 
-    local parent = table.find_by_key(BUFF_TEMPLATES, 'child_buff_template', buff_name)
-    if parent then
-        return BUFF_TEMPLATES[parent].hud_icon
+    local parent_name = self._child_to_parent[buff_name]
+    if parent_name then
+        return BUFF_TEMPLATES[parent_name].hud_icon
     end
 
-    if table.is_nil_or_empty(self._cached_items) then
+    if table.is_nil_or_empty(self._trait_to_icon) then
         return nil
     end
 
-    for _, item in pairs(self._cached_items) do
-        if item.trait == buff_name then
-            if item.icon and item.icon ~= '' then
-                return item.icon
+    return self._trait_to_icon[buff_name]
+end
+
+function BuffsProvider:_populate_buffs()
+    if self._buffs then return end
+
+    self._buffs = mod:persistent_table('buffs_cache')
+
+    for buffCategory, template in pairs(BUFF_TEMPLATES) do
+        if not (buffCategory == "PREDICTED" or buffCategory == "NON_PREDICTED") then
+            local icon = self:_get_icon(template)
+
+            if icon and self._buffs[template.name] == nil then
+                self._buffs[template.name] = BuffData:new({
+                    icon = icon
+                })
             end
         end
     end
-
-    return nil
 end
 
 -- -------------------------------
@@ -81,22 +122,6 @@ end
 -- -------------------------------
 
 function BuffsProvider:get_all_buffs()
-    if self._buffs == nil then
-        self._buffs = {}
-
-        for buffCategory, template in pairs(BUFF_TEMPLATES) do
-            if not (buffCategory == "PREDICTED" or buffCategory == "NON_PREDICTED") then
-                local icon = self:_get_icon(template)
-
-                if icon and self._buffs[template.name] == nil then
-                    self._buffs[template.name] = BuffData:new({
-                        icon = icon
-                    })
-                end
-            end
-        end
-    end
-
     return self._buffs
 end
 

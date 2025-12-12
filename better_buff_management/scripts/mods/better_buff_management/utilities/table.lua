@@ -1,3 +1,6 @@
+if table._bbm_initalized then return end
+table._bbm_initalized = true
+
 local old_empty = table.is_empty
 table.is_empty = function(tbl)
     return table.size(tbl) == 0 or old_empty(tbl)

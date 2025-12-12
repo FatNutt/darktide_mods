@@ -98,7 +98,7 @@ function BuffBarsComponent:_update_create_bar()
 
     if not string.is_nil_or_whitespace(self._new_bar_name) and create_bar then
         if not table.contains(self:_bar_names(), self._new_bar_name) then
-            self._bar[self._new_bar_name] = BuffBar:new({
+            self._bars[self._new_bar_name] = BuffBar:new({
                 filter = {},
                 direction = BuffBar.DIRECTIONS.HORIZONTAL,
                 alignment = BuffBar.ALIGNMENTS.LEFT

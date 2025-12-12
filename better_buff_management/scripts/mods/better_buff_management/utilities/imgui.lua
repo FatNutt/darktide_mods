@@ -1,4 +1,7 @@
 local mod = get_mod('better_buff_management')
+if mod._imgui_utils_initialized then return end
+mod._imgui_utils_initialized = true
+
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/string')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/table')
 
