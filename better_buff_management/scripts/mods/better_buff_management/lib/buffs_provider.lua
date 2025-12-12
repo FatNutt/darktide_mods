@@ -1,3 +1,17 @@
+--[[
+    BuffsProvider
+
+    Responsible for loading and caching all buff data from Darktide's BUFF_TEMPLATES.
+
+    Performance Optimization:
+    - Uses mod:persistent_table() to cache data across mod reloads (CTRL+SHIFT+R)
+    - Pre-builds lookup indices for O(1) icon resolution instead of O(n) searches
+    - Only populates buffs that have displayable icons
+
+    The caching is critical because BUFF_TEMPLATES contains thousands of entries
+    and iterating through them on every reload would cause exponential slowdown.
+--]]
+
 local mod = get_mod('better_buff_management')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/debug')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/string')
@@ -46,6 +60,9 @@ end
 -- -------------------------------
 -- ------ Private Functions ------
 -- -------------------------------
+-- Builds a reverse lookup: child_buff_template -> parent_name
+-- This allows O(1) lookup when resolving icons for child buffs
+-- Example: "some_buff" -> "some_buff_parent" so we can get parent's hud_icon
 function BuffsProvider:_build_parent_lookup()
     if self._child_to_parent then return end
 
@@ -58,6 +75,9 @@ function BuffsProvider:_build_parent_lookup()
     end
 end
 
+-- Builds lookup: trait_name -> icon_path from MASTER_ITEMS cache
+-- Some buffs (especially weapon traits) get their icons from items rather than buff templates
+-- This index enables O(1) icon lookup instead of scanning all items
 function BuffsProvider:_build_trait_index()
     if self._trait_to_icon then return end
 
@@ -72,6 +92,11 @@ function BuffsProvider:_build_trait_index()
     end
 end
 
+-- Resolves the display icon for a buff using priority-based fallback:
+-- 1. Return nil if buff explicitly hides its icon
+-- 2. Use buff's own hud_icon if defined
+-- 3. Check if this is a child buff and use parent's icon
+-- 4. Fall back to trait-based icon from MASTER_ITEMS
 function BuffsProvider:_get_icon(buff_template)
     if buff_template.hide_icon_in_hud then
         return nil
@@ -83,15 +108,18 @@ function BuffsProvider:_get_icon(buff_template)
 
     local buff_name = buff_template.name
 
+    -- Some buffs have "_parent" suffix but reference child templates
     if buff_name:find('_parent') then
         buff_name = buff_name:gsub('_parent', '')
     end
 
+    -- Check if this buff is a child of another buff (use parent's icon)
     local parent_name = self._child_to_parent[buff_name]
     if parent_name then
         return BUFF_TEMPLATES[parent_name].hud_icon
     end
 
+    -- Last resort: check if this buff name matches a weapon trait
     if table.is_nil_or_empty(self._trait_to_icon) then
         return nil
     end

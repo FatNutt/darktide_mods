@@ -7,6 +7,8 @@ mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilit
 local HudElementBuffBar = mod:io_dofile(
     'better_buff_management/scripts/mods/better_buff_management/hud/hud_element_buff_bar')
 
+-- Provider instances are cached in persistent_table to survive mod reloads.
+-- This prevents expensive re-initialization of buff data
 local cached_providers = mod:persistent_table('providers')
 
 local buffs_provider
@@ -143,6 +145,8 @@ mod:hook('UIManager', 'using_input', function(func, ...)
     return management_window.is_open or func(...)
 end)
 
+-- Hook into HUD initialization to inject our custom buff bar definitions.
+-- Order matters: first handle default bar visibility, then remove old custom bars, then add current custom bars. This ensures clean state on each HUD recreation.
 mod:hook('UIHud', 'init', function(func, self, definitions, visibility_groups, params)
     add_or_remove_default_buff_bar(definitions)
 
@@ -152,6 +156,7 @@ mod:hook('UIHud', 'init', function(func, self, definitions, visibility_groups, p
     return func(self, definitions, visibility_groups, params)
 end)
 
+-- Hook into element creation to instantiate our custom HudElementBuffBar class instead of letting the game try to load it (which would fail).
 mod:hook('UIHud', '_add_element', function(func, self, definition, elements, elements_array)
     if definition.class_name:starts_with('HudElementBuffBar') then
         local draw_layer = 0

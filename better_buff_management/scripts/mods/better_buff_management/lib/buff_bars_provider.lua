@@ -1,3 +1,13 @@
+--[[
+    BuffBarsProvider
+    
+    Manages the collection of user-configured buff bars.
+    Handles loading/saving bar configurations from mod settings.
+    
+    Supports migration from legacy 'buffs_data' format to new 'buff_bars' format
+    via smart_load_buff_bars() which auto-detects and converts old data.
+--]]
+
 local mod = get_mod('better_buff_management')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/debug')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/string')
@@ -99,6 +109,10 @@ function BuffBarsProvider:load_buff_bars()
     return bars
 end
 
+-- Smart loader that handles migration between data formats:
+-- - If old 'buffs_data' exists but new 'buff_bars' doesn't -> migrate from old format
+-- - Otherwise -> load from new format (or empty if neither exists)
+-- Only runs once per session; subsequent calls return cached _bars
 function BuffBarsProvider:smart_load_buff_bars()
     if self._bars == nil then
         self._bars = {}
