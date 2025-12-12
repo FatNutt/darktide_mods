@@ -52,15 +52,11 @@ function BuffsProvider:_build_templates_index(force)
     if not force and self._buff_templates then return end
 
     self._buff_templates = mod:persistent_table('buff_templates')
-    for buffCategory, template in pairs(BUFF_TEMPLATES) do
-        if not (buffCategory == "PREDICTED" or buffCategory == "NON_PREDICTED") then
+    for buff_category, template in pairs(BUFF_TEMPLATES) do
+        if not (buff_category == "PREDICTED" or buff_category == "NON_PREDICTED") then
             -- If its not either of the categories above, the category is actually the template name
 
-            if type(template) == 'string' then
-                print(('%s = "%s"'):format(buffCategory, template))
-            else
-                self._buff_templates[buffCategory] = template
-            end
+            self._buff_templates[buff_category] = template
         end
     end
 end
@@ -105,7 +101,6 @@ end
 -- 4. Fall back to trait-based icon from MASTER_ITEMS
 function BuffsProvider:_get_icon(buff_template)
     if buff_template == nil then return nil end
-    if type(buff_template) ~= 'table' then return nil end
     if buff_template.hide_icon_in_hud then return nil end
     if buff_template.hud_icon then return buff_template.hud_icon end
 
@@ -119,7 +114,7 @@ function BuffsProvider:_get_icon(buff_template)
     -- Check if this buff is a child of another buff (use parent's icon)
     local parent_name = self._child_to_parent[buff_name]
     if parent_name then
-        return self:_get_icon(parent_name)
+        return self:_get_icon(self._buff_templates[parent_name])
     end
 
     -- Last resort: check if this buff name matches a weapon trait
@@ -136,15 +131,13 @@ function BuffsProvider:_populate_buffs(force)
 
     self._buffs = mod:persistent_table('buffs_cache')
 
-    for buffCategory, template in pairs(self._buff_templates) do
-        if not (buffCategory == "PREDICTED" or buffCategory == "NON_PREDICTED") then
-            local icon = self:_get_icon(template)
+    for _, template in pairs(self._buff_templates) do
+        local icon = self:_get_icon(template)
 
-            if icon and self._buffs[template.name:trim()] == nil then
-                self._buffs[template.name:trim()] = BuffData:new({
-                    icon = icon
-                })
-            end
+        if icon and self._buffs[template.name:trim()] == nil then
+            self._buffs[template.name:trim()] = BuffData:new({
+                icon = icon
+            })
         end
     end
 end
