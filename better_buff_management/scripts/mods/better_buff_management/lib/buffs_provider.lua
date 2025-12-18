@@ -171,7 +171,14 @@ function BuffsProvider:refresh()
     self:_build(true)
 end
 
-function BuffsProvider:get_all_buffs()
+function BuffsProvider:get_all_buffs(filter)
+    if type(filter) == 'table' then
+        ---@diagnostic disable-next-line: undefined-field
+        return table.filter(self._buffs, function(buff_name)
+            return not filter:contains(buff_name)
+        end)
+    end
+
     return self._buffs
 end
 

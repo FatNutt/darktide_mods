@@ -1,6 +1,7 @@
 require('scripts/ui/hud/elements/player_buffs/hud_element_player_buffs_polling')
 
 local mod = get_mod('better_buff_management')
+
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/table')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/string')
 local BuffBarDefinitions = mod:io_dofile(
@@ -12,11 +13,20 @@ local BuffBar = mod:io_dofile('better_buff_management/scripts/mods/better_buff_m
 -- -------------------------------
 -- ------- Local Functions -------
 -- -------------------------------
-local function create_filter_index(raw_filter)
+local function create_filter_index(raw_filter, hidden_buffs)
     local filter = {}
 
+    local hidden_lookup = {}
+    if hidden_buffs then
+        for _, buff_name in ipairs(hidden_buffs) do
+            hidden_lookup[buff_name] = true
+        end
+    end
+
     for _, buff_name in ipairs(raw_filter) do
-        filter[buff_name] = true
+        if not hidden_lookup[buff_name] then
+            filter[buff_name] = true
+        end
     end
 
     return filter
@@ -29,7 +39,8 @@ local HudElementBuffBar = class('HudElementBuffBar', 'HudElementPlayerBuffs')
 function HudElementBuffBar:init(parent, draw_layer, start_scale, params)
     HudElementBuffBar.super.init(self, parent, draw_layer, start_scale, BuffBarDefinitions)
     self._bar_data = params and params.bar_data or BuffBar:new()
-    self._filter = create_filter_index(self._bar_data.filter)
+    self._hidden_buffs = params and params.hidden_buffs or {}
+    self._filter = create_filter_index(self._bar_data.filter, self._hidden_buffs)
 end
 
 -- -------------------------------

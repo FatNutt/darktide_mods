@@ -39,6 +39,9 @@ local BUFF_BARS_SETTING_ID = 'buff_bars'
 -- --------- Constructor ---------
 -- -------------------------------
 local BuffBarsProvider = class(CLASS_NAME)
+
+BuffBarsProvider.HIDDEN_BAR_NAME = 'Hidden'
+
 function BuffBarsProvider:init(buffs_provider)
     self._buffs_provider = buffs_provider or BuffsProvider:new()
     self._bars = nil
@@ -81,7 +84,6 @@ function BuffBarsProvider:load_from_old_buff_bars()
             local bar_name = buff_data.bar_name:trim()
 
             if bars[bar_name] == nil then
-                print(('Adding [%s]'):format(bar_name))
                 bars[bar_name] = BuffBar:new({
                     filter = {},
                     direction = BuffBar.DIRECTIONS.HORIZONTAL,
@@ -128,11 +130,35 @@ function BuffBarsProvider:smart_load_buff_bars()
             self._bars = self:load_buff_bars()
         end
     end
+
+    if self._bars and self._bars[self.HIDDEN_BAR_NAME] == nil then
+        self._bars[self.HIDDEN_BAR_NAME] = BuffBar:new({
+            filter = {},
+            direction = BuffBar.DIRECTIONS.HORIZONTAL,
+            alignment = BuffBar.ALIGNMENTS.VERTICAL
+        })
+    end
     return self._bars
 end
 
 function BuffBarsProvider:save_buff_bars()
     mod:set(BUFF_BARS_SETTING_ID, self._bars)
+end
+
+function BuffBarsProvider:get_hidden_bar()
+    return self._bars[self.HIDDEN_BAR_NAME]
+end
+
+function BuffBarsProvider:get_bar_names()
+    local bar_names = table.keys(self._bars)
+
+    table.sort(bar_names, function(a, b)
+        if a == self.HIDDEN_BAR_NAME then return true end
+        if b == self.HIDDEN_BAR_NAME then return false end
+        return a < b
+    end)
+
+    return bar_names
 end
 
 return BuffBarsProvider

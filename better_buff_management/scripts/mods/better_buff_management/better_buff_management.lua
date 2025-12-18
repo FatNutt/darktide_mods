@@ -78,9 +78,13 @@ local function add_buff_bar_hud_definitions(definitions)
     end
 
     local bars = bars_provider:smart_load_buff_bars()
-
+    local hidden_bar = bars_provider:get_hidden_bar()
     if not table.is_nil_or_empty(bars) then
         for bar_name, bar_data in pairs(bars) do
+            if bar_name == 'Hidden' then
+                goto continue
+            end
+
             table.insert(definitions, {
                 package = 'packages/ui/hud/player_buffs/player_buffs',
                 use_retained_mode = true,
@@ -94,9 +98,12 @@ local function add_buff_bar_hud_definitions(definitions)
                 },
                 params = {
                     bar_name = bar_name,
-                    bar_data = bar_data
+                    bar_data = bar_data,
+                    hidden_buffs = hidden_bar.filter
                 }
             })
+
+            ::continue::
         end
     end
 end

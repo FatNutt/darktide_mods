@@ -53,10 +53,7 @@ end
 -- -------------------------------
 
 function BuffBarsComponent:_bar_names()
-    local bar_names = table.keys(self._bars)
-    table.sort(bar_names)
-
-    return bar_names
+    return self._bars_provider:get_bar_names()
 end
 
 function BuffBarsComponent:_update_buffs(window_id, bar_data)
