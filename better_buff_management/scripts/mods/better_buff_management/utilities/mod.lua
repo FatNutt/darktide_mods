@@ -1,4 +1,6 @@
 local mod = get_mod('better_buff_management')
+if mod._mod_utils_initialized then return end
+mod._mod_utils_initialized = true
 
 function mod:is_in_hub()
     local game_mode_name = Managers.state.game_mode:game_mode_name()

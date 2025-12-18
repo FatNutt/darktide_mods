@@ -1,6 +1,29 @@
+if table._bbm_initalized then return end
+table._bbm_initalized = true
+
 local old_empty = table.is_empty
 table.is_empty = function(tbl)
     return table.size(tbl) == 0 or old_empty(tbl)
+end
+
+function table.keys(tbl)
+    local keys = {}
+
+    for key in pairs(tbl) do
+        table.insert(keys, key)
+    end
+
+    return keys
+end
+
+function table.values(tbl)
+    local values = {}
+
+    for _, value in pairs(tbl) do
+        table.insert(values, value)
+    end
+
+    return values
 end
 
 function table.is_nil_or_empty(tbl)
@@ -52,6 +75,25 @@ function table.sorted_by_value(tbl, sort_func)
     table.sort(retTbl, function(a, b)
         return sort_func(a, b)
     end)
+
+    return retTbl
+end
+
+function table.sorted_by_keys(tbl, sort_func)
+    local keys = table.keys(tbl)
+
+    if sort_func then
+        table.sort(keys, function(a, b)
+            return sort_func(a, b)
+        end)
+    else
+        table.sort(keys)
+    end
+
+    local retTbl = {}
+    for _, key in pairs(keys) do
+        table.insert(retTbl, { key = key, value = tbl[key] })
+    end
 
     return retTbl
 end

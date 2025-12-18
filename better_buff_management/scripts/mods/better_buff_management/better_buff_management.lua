@@ -3,13 +3,34 @@ local HudElementsDefinitions = require('scripts/ui/hud/hud_elements_player')
 local mod = get_mod('better_buff_management')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/table')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/mod')
+
 local HudElementBuffBar = mod:io_dofile(
     'better_buff_management/scripts/mods/better_buff_management/hud/hud_element_buff_bar')
 
-local management_window = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/window'):new()
+-- Provider instances are cached in persistent_table to survive mod reloads.
+-- This prevents expensive re-initialization of buff data
+local cached_providers = mod:persistent_table('providers')
 
-local BUFFS_DATA_SETTING_ID = 'buffs_data'
-local BARS_SETTING_ID = 'bars'
+local buffs_provider
+local bars_provider
+
+if cached_providers.buffs_provider then
+    buffs_provider = cached_providers.buffs_provider
+    bars_provider = cached_providers.bars_provider
+else
+    buffs_provider = mod:io_dofile(
+        'better_buff_management/scripts/mods/better_buff_management/lib/buffs_provider'):new()
+    bars_provider = mod:io_dofile(
+        'better_buff_management/scripts/mods/better_buff_management/lib/buff_bars_provider'):new(buffs_provider)
+    cached_providers.buffs_provider = buffs_provider
+    cached_providers.bars_provider = bars_provider
+end
+
+local management_window = mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/window'):new({
+    buffs_provider = buffs_provider,
+    bars_provider = bars_provider
+})
+
 local TOGGLE_DEFAULT_BAR_SETTING_ID = 'toggle_default_bar'
 
 local HUD_ELEMENT_PLAYER_BUFFS = 'HudElementPlayerBuffs'
@@ -50,26 +71,15 @@ local function remove_buff_bar_hud_definitions(definitions)
     definitions = table.to_array(definitions)
 end
 
-local function get_filter_for_bar(buffs_data, bar_name)
-    local filter_data = table.filter(buffs_data, function(filter_data)
-        return filter_data.bar_name == bar_name and not filter_data.is_hidden
-    end)
-
-    if table.is_nil_or_empty(filter_data) then
-        return nil
+local function add_buff_bar_hud_definitions(definitions)
+    if mod:is_in_hub() then
+        return
     end
 
-    return table.map(filter_data, function(_)
-        return true
-    end)
-end
+    local bars = bars_provider:smart_load_buff_bars()
 
-local function add_buff_bar_hud_definitions(definitions)
-    local buffs_data = mod:get(BUFFS_DATA_SETTING_ID)
-    local bars = mod:get(BARS_SETTING_ID)
-
-    if not table.is_nil_or_empty(buffs_data) and not table.is_nil_or_empty(bars) then
-        for _, bar_name in ipairs(bars) do
+    if not table.is_nil_or_empty(bars) then
+        for bar_name, bar_data in pairs(bars) do
             table.insert(definitions, {
                 package = 'packages/ui/hud/player_buffs/player_buffs',
                 use_retained_mode = true,
@@ -81,7 +91,7 @@ local function add_buff_bar_hud_definitions(definitions)
                     'alive',
                     'communication_wheel'
                 },
-                buffs_filter = get_filter_for_bar(buffs_data, bar_name)
+                data = bar_data
             })
         end
     end
@@ -127,14 +137,16 @@ mod.update = function()
     management_window:update()
 end
 
--- -- -------------------------------
--- -- ------------ Hooks ------------
--- -- -------------------------------
+-- -------------------------------
+-- ------------ Hooks ------------
+-- -------------------------------
 
 mod:hook('UIManager', 'using_input', function(func, ...)
     return management_window.is_open or func(...)
 end)
 
+-- Hook into HUD initialization to inject our custom buff bar definitions.
+-- Order matters: first handle default bar visibility, then remove old custom bars, then add current custom bars. This ensures clean state on each HUD recreation.
 mod:hook('UIHud', 'init', function(func, self, definitions, visibility_groups, params)
     add_or_remove_default_buff_bar(definitions)
 
@@ -144,12 +156,13 @@ mod:hook('UIHud', 'init', function(func, self, definitions, visibility_groups, p
     return func(self, definitions, visibility_groups, params)
 end)
 
+-- Hook into element creation to instantiate our custom HudElementBuffBar class instead of letting the game try to load it (which would fail).
 mod:hook('UIHud', '_add_element', function(func, self, definition, elements, elements_array)
     if definition.class_name:starts_with('HudElementBuffBar') then
         local draw_layer = 0
         local hud_scale = definition.use_hud_scale and (self._hud_scale ~= nil and self:_hud_scale()) or
             RESOLUTION_LOOKUP.scale
-        local hud_element = HudElementBuffBar:new(self, draw_layer, hud_scale, definition.buffs_filter)
+        local hud_element = HudElementBuffBar:new(self, draw_layer, hud_scale, definition.data)
         hud_element.__class_name = definition.class_name
         elements[definition.class_name] = hud_element
         table.insert(elements_array, hud_element)

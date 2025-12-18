@@ -17,32 +17,13 @@ local ERRORS = {
 -- ------- Local Functions -------
 -- -------------------------------
 
-local function validate_params(params)
-    if type(params) ~= 'table' then
-        error(ERRORS.PARAMS_NOT_TABLE, 1)
-    end
-
-    if table.size(params) == 0 then
-        error(ERRORS.ALL_PARAMS_IS_MISSING, 1)
-    end
-
-    if string.is_nil_or_whitespace(params.name) then
-        error(ERRORS.PARAMS_NAME_IS_MISSING, 1)
-    end
-end
-
-
 -- -------------------------------
 -- --------- Constructor ---------
 -- -------------------------------
 local BuffData = class(CLASS_NAME)
 function BuffData:init(params)
-    validate_params(params)
-
-    self.name = params.name
-    self.icon = params.icon
-    self.is_hidden = params.is_hidden or false
-    self.bar_name = params.bar_name
+    self.icon = params ~= nil and params.icon ~= nil and params.icon or nil
+    self.is_hidden = params ~= nil and params.is_hidden ~= nil and params.is_hidden or false
 end
 
 -- -------------------------------
@@ -54,7 +35,7 @@ end
 -- -------------------------------
 
 function BuffData:save_data()
-    return { name = self.name, is_hidden = self.is_hidden, bar_name = self.bar_name }
+    return { is_hidden = self.is_hidden }
 end
 
 function BuffData:toggle_hidden()

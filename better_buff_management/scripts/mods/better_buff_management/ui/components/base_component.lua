@@ -11,7 +11,7 @@ local ERRORS = {
 -- --------- Constructor ---------
 -- -------------------------------
 local BaseComponent = class('BaseComponent')
-function BaseComponent:init()
+function BaseComponent:init(params)
 end
 
 -- -------------------------------

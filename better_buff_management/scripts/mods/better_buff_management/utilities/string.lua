@@ -1,3 +1,6 @@
+if string._bbm_initalized then return end
+string._bbm_initalized = true
+
 function string.capitalize(self)
     return self:sub(1, 1):upper() .. self:sub(2):lower()
 end
@@ -37,4 +40,8 @@ end
 
 function string.sanitize(self, pattern)
     return self:gsub(pattern, '')
+end
+
+function string.starts_with(self, word)
+    return self:sub(1, #word) == word
 end

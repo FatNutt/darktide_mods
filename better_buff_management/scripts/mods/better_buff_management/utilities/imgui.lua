@@ -1,4 +1,7 @@
 local mod = get_mod('better_buff_management')
+if mod._imgui_utils_initialized then return end
+mod._imgui_utils_initialized = true
+
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/string')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/table')
 
@@ -214,4 +217,8 @@ Imgui.ided_input_text = function(...)
     Imgui.pop_id()
 
     return value
+end
+
+Imgui.make_id = function(name)
+    return string.to_pascal_case(name, ' _'):upper()
 end
