@@ -45,3 +45,16 @@ end
 function string.starts_with(self, word)
     return self:sub(1, #word) == word
 end
+
+function string.trim(self)
+    return self:match("^%s*(.-)%s*$")
+end
+
+-- chunk a string by given character chunk size
+function string.chunk(self, chunk_size)
+    local chunks = {}
+    for chunk in self:gmatch('.{1,' .. chunk_size .. '}') do
+        table.insert(chunks, chunk)
+    end
+    return chunks
+end

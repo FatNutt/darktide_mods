@@ -1,4 +1,5 @@
 return {
+    IMPORT_BAR_WINDOW_SIZE = { 0, 86 },
     BAR_WINDOW_SIZE = { 0, 125 },
     SEARCH_WINDOW_SIZE = { 0, 100 },
     BUFF_WINDOW_SIZE = { 75, 100 },

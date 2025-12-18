@@ -1,0 +1,1 @@
+- Stop keyboard from being read by game when in config menu

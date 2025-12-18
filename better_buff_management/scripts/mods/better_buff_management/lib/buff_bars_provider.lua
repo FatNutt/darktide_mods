@@ -1,9 +1,9 @@
 --[[
     BuffBarsProvider
-    
+
     Manages the collection of user-configured buff bars.
     Handles loading/saving bar configurations from mod settings.
-    
+
     Supports migration from legacy 'buffs_data' format to new 'buff_bars' format
     via smart_load_buff_bars() which auto-detects and converts old data.
 --]]
@@ -73,18 +73,23 @@ function BuffBarsProvider:load_from_old_buff_bars()
 
     local bars = {}
     for buff_name, buff_data in pairs(raw_buffs_data) do
-        local buff = self._buffs_provider:try_get_buff(buff_name)
+        local trimmed_buff_name = buff_name:trim()
+
+        local buff = self._buffs_provider:try_get_buff(trimmed_buff_name)
 
         if buff then
-            if bars[buff_data.bar_name] == nil then
-                bars[buff_data.bar_name] = BuffBar:new({
+            local bar_name = buff_data.bar_name:trim()
+
+            if bars[bar_name] == nil then
+                print(('Adding [%s]'):format(bar_name))
+                bars[bar_name] = BuffBar:new({
                     filter = {},
                     direction = BuffBar.DIRECTIONS.HORIZONTAL,
                     alignment = BuffBar.ALIGNMENTS.VERTICAL
                 })
             end
 
-            table.insert(bars[buff_data.bar_name].filter, buff_name)
+            table.insert(bars[bar_name].filter, trimmed_buff_name)
         end
     end
 
