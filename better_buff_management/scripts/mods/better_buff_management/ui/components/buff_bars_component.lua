@@ -1,4 +1,5 @@
 local mod = get_mod('better_buff_management')
+mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/string')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/table')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/imgui')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/ui/components/base_buff_component')
@@ -192,9 +193,10 @@ function BuffBarsComponent:_update_bar(bar_name, bar_data)
     if Imgui.collapsing_header(bar_name) then
         self:_update_buff_filter_window(bar_id, bar_data)
 
-        Imgui.text(mod:localize(EXPORT_BUFF_BAR_BUTTON_LOC_ID))
-        Imgui.same_line()
-        Imgui.ided_input_text(self.__class_name .. '_BAR_EXPORT_INPUT', bar_data:serialize())
+        -- Imgui.text(mod:localize(EXPORT_BUFF_BAR_BUTTON_LOC_ID))
+        -- for _, chunk in ipairs(chunks) do
+        --     Imgui.ided_input_text(self.__class_name .. '_BAR_EXPORT_INPUT', chunk)
+        -- end
     end
     Imgui.pop_id()
 end
@@ -216,7 +218,7 @@ end
 
 function BuffBarsComponent:update()
     self:_update_create_bar()
-    self:_update_import_bar()
+    -- self:_update_import_bar()
     self:_update_clear_or_delete_bar()
     self:_update_bars()
 end

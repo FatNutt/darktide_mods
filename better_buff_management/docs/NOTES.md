@@ -67,6 +67,14 @@ The mod uses several patterns to ensure fast loading and stable mod reloads (CTR
    - `_child_to_parent`: Maps child buff names to parent template names
    - `_trait_to_icon`: Maps trait names to icon paths from MASTER_ITEMS
 
+### Limitations
+
+1. **Importing / Exporting Buff Bars**
+
+   - At the moment, Imgui only supports ~500 characters max for text fields. The lowest character count I could get buff data to (using a reasonable amount of buffs) is ~8000 characters.
+   - For the reasons above, importing / exporting via ImGui or the mod directly looks unlikely to succeed at this moment.
+   - The current workaround will be manual config editing
+
 ### Data Flow
 
 ```

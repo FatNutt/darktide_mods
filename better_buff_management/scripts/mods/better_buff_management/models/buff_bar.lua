@@ -2,8 +2,9 @@ local mod = get_mod('better_buff_management')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/string')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/table')
 
--- Use DMF's loadstring backup to avoid sandbox issues
-local _loadstring = Mods.lua.loadstring
+-- local SerializationService = mod:io_dofile(
+--     'better_buff_management/scripts/mods/better_buff_management/lib/serialization_service')
+
 
 local MOD_NAME = mod:localize('mod_name')
 local CLASS_NAME = 'BuffBar'
@@ -15,42 +16,70 @@ local ERRORS = {
     PARAMS_IS_MISSING = ('%s parameters.%s is missing'):format(ERROR_PREFIX, '%s'),
     DESERIALIZE_INVALID = ('%s deserialize failed: invalid input'):format(ERROR_PREFIX),
     DESERIALIZE_PARSE_ERROR = ('%s deserialize failed: %%s'):format(ERROR_PREFIX),
+    DESERIALIZE_COMPACT_FAILED = ('%s deserialize_compact failed: %%s'):format(ERROR_PREFIX),
 }
+
+-- Compact serialization schema for BuffBar
+-- local COMPACT_SCHEMA = {
+--     version = '1',
+--     fields = {
+--         {
+--             key = 'direction',
+--             mapping = {
+--                 horizontal = 'h',
+--                 vertical = 'v'
+--             },
+--             default = 'h'
+--         },
+--         {
+--             key = 'alignment',
+--             mapping = {
+--                 left = 'l',
+--                 right = 'r',
+--                 up = 'u',
+--                 down = 'd'
+--             },
+--             default = 'l'
+--         }
+--     },
+--     array_key = 'filter',
+--     compress_array = true -- Enable buff name compression
+-- }
 
 
 -- -------------------------------
 -- ------- Local Functions -------
 -- -------------------------------
 
--- Escapes a key for use in a Lua table literal
--- Returns the key directly if it's a valid identifier, otherwise wraps appropriately
-local function escape_key(key)
-    local key_type = type(key)
-    if key_type == 'number' then
-        return string.format('[%d]', key)
-    elseif key_type == 'string' then
-        if key:match('^[%a_][%w_]*$') then
-            return key
-        else
-            return string.format('["%s"]', key:gsub('\\', '\\\\'):gsub('"', '\\"'))
-        end
-    else
-        return string.format('["%s"]', tostring(key))
-    end
-end
+-- -- Escapes a key for use in a Lua table literal
+-- -- Returns the key directly if it's a valid identifier, otherwise wraps appropriately
+-- local function escape_key(key)
+--     local key_type = type(key)
+--     if key_type == 'number' then
+--         return string.format('[%d]', key)
+--     elseif key_type == 'string' then
+--         if key:match('^[%a_][%w_]*$') then
+--             return key
+--         else
+--             return string.format('["%s"]', key:gsub('\\', '\\\\'):gsub('"', '\\"'))
+--         end
+--     else
+--         return string.format('["%s"]', tostring(key))
+--     end
+-- end
 
--- Converts a Lua value to its literal string representation
-local function value_to_string(value)
-    local t = type(value)
-    if t == 'string' then
-        return string.format('"%s"', value:gsub('\\', '\\\\'):gsub('"', '\\"'))
-    elseif t == 'boolean' or t == 'number' then
-        return tostring(value)
-    elseif t == 'nil' then
-        return 'nil'
-    end
-    return nil
-end
+-- -- Converts a Lua value to its literal string representation
+-- local function value_to_string(value)
+--     local t = type(value)
+--     if t == 'string' then
+--         return string.format('"%s"', value:gsub('\\', '\\\\'):gsub('"', '\\"'))
+--     elseif t == 'boolean' or t == 'number' then
+--         return tostring(value)
+--     elseif t == 'nil' then
+--         return 'nil'
+--     end
+--     return nil
+-- end
 
 -- -------------------------------
 -- --------- Constructor ---------
@@ -100,56 +129,86 @@ function BuffBar:save_data()
     }
 end
 
--- Serializes the BuffBar to a Lua table literal string
--- @return string: The serialized BuffBar
-function BuffBar:serialize()
-    local parts = {}
+-- -- Serializes the BuffBar to a Lua table literal string
+-- -- @return string: The serialized BuffBar
+-- function BuffBar:serialize()
+--     local parts = {}
 
-    -- Serialize filter (array of buff name strings)
-    local filter_parts = {}
-    for _, buff_name in ipairs(self.filter) do
-        table.insert(filter_parts, value_to_string(buff_name))
-    end
-    table.insert(parts, 'filter={' .. table.concat(filter_parts, ',') .. '}')
+--     -- Serialize filter (array of buff name strings)
+--     local filter_parts = {}
+--     for _, buff_name in ipairs(self.filter) do
+--         table.insert(filter_parts, value_to_string(buff_name))
+--     end
+--     table.insert(parts, 'filter={' .. table.concat(filter_parts, ',') .. '}')
 
-    -- Serialize direction and alignment
-    table.insert(parts, 'direction=' .. value_to_string(self.direction))
-    table.insert(parts, 'alignment=' .. value_to_string(self.alignment))
+--     -- Serialize direction and alignment
+--     table.insert(parts, 'direction=' .. value_to_string(self.direction))
+--     table.insert(parts, 'alignment=' .. value_to_string(self.alignment))
 
-    return '{' .. table.concat(parts, ',') .. '}'
-end
+--     return '{' .. table.concat(parts, ',') .. '}'
+-- end
 
--- Deserializes a string into a BuffBar instance
--- @param str string: The serialized BuffBar string
--- @return BuffBar|nil: The deserialized BuffBar, or nil on error
--- @return string|nil: Error message if deserialization failed
-function BuffBar.deserialize(str)
-    if type(str) ~= 'string' or str == '' then
-        return nil, ERRORS.DESERIALIZE_INVALID
-    end
+-- -- Deserializes a string into a BuffBar instance
+-- -- @param str string: The serialized BuffBar string
+-- -- @return BuffBar|nil: The deserialized BuffBar, or nil on error
+-- -- @return string|nil: Error message if deserialization failed
+-- function BuffBar.deserialize(str)
+--     if type(str) ~= 'string' or str == '' then
+--         return nil, ERRORS.DESERIALIZE_INVALID
+--     end
 
-    -- Parse the Lua table literal using DMF's loadstring backup
-    local chunk, err = _loadstring('return ' .. str)
-    if not chunk then
-        return nil, ERRORS.DESERIALIZE_PARSE_ERROR:format(err)
-    end
+--     -- Parse the Lua table literal using DMF's loadstring backup
+--     local chunk, err = _loadstring('return ' .. str)
+--     if not chunk then
+--         return nil, ERRORS.DESERIALIZE_PARSE_ERROR:format(err)
+--     end
 
-    -- Execute in a protected call
-    local success, data = pcall(chunk)
-    if not success then
-        return nil, ERRORS.DESERIALIZE_PARSE_ERROR:format(data)
-    end
+--     -- Execute in a protected call
+--     local success, data = pcall(chunk)
+--     if not success then
+--         return nil, ERRORS.DESERIALIZE_PARSE_ERROR:format(data)
+--     end
 
-    if type(data) ~= 'table' then
-        return nil, ERRORS.DESERIALIZE_INVALID
-    end
+--     if type(data) ~= 'table' then
+--         return nil, ERRORS.DESERIALIZE_INVALID
+--     end
 
-    -- Create and return the BuffBar
-    return BuffBar:new({
-        filter = data.filter,
-        direction = data.direction,
-        alignment = data.alignment
-    })
-end
+--     -- Create and return the BuffBar
+--     return BuffBar:new({
+--         filter = data.filter,
+--         direction = data.direction,
+--         alignment = data.alignment
+--     })
+-- end
+
+-- -- Serializes the BuffBar to a compact string format
+-- -- Format: <version><direction><alignment>|<buff1>,<buff2>,...
+-- -- Example: "1hl|buff_name_01,weapon_buff_01"
+-- -- @return string: The compact serialized BuffBar
+-- function BuffBar:serialize()
+--     return SerializationService.serialize({
+--         direction = self.direction,
+--         alignment = self.alignment,
+--         filter = self.filter
+--     }, COMPACT_SCHEMA)
+-- end
+
+-- -- Deserializes a compact string into a BuffBar instance
+-- -- @param str string: The compact serialized BuffBar string
+-- -- @return BuffBar|nil: The deserialized BuffBar, or nil on error
+-- -- @return string|nil: Error message if deserialization failed
+-- function BuffBar.deserialize(str)
+--     local data, err = SerializationService.deserialize(str, COMPACT_SCHEMA)
+--     if not data then
+--         return nil, ERRORS.DESERIALIZE_COMPACT_FAILED:format(err)
+--     end
+
+--     -- Create and return the BuffBar
+--     return BuffBar:new({
+--         filter = data.filter,
+--         direction = data.direction,
+--         alignment = data.alignment
+--     })
+-- end
 
 return BuffBar
