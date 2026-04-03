@@ -108,7 +108,7 @@ end
 -- combo_id = string, combo_label = string, combo_items = array<string>, selected_index = nil|number, add_empty_entry = boolean(defaults true)
 -- arg1 = combo_id, arg2 = combo_label|combo_items, arg3 = combo_items|selected_index, arg4 = selected_index
 Imgui.combo = function(...)
-    local args = { ... }
+    local args = {...}
     validate_combo_params(args)
 
     local id = args[1]
@@ -152,7 +152,7 @@ Imgui.combo = function(...)
                 if Imgui.selectable('', is_selected_index_nil) then
                     selected_index = nil
                 end
-
+    
                 if is_selected_index_nil then
                     Imgui.set_item_default_focus()
                 end
@@ -190,7 +190,7 @@ end
 -- input_id = string, input_label = nil|string, value = nil|string
 -- arg1 = input_id, arg2 = input_label|value, arg3 = value
 Imgui.ided_input_text = function(...)
-    local args = { ... }
+    local args = {...}
     validate_input_text_params(args)
 
     local id = args[1]

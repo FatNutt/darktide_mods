@@ -58,7 +58,7 @@ function BuffData:save_data()
 end
 
 function BuffData:toggle_hidden()
-    self.is_hidden = not self._is_hidden
+    self.is_hidden = not self.is_hidden
 end
 
 return BuffData

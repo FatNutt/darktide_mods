@@ -3,18 +3,37 @@ require('scripts/ui/hud/elements/player_buffs/hud_element_player_buffs_polling')
 local mod = get_mod('better_buff_management')
 mod:io_dofile('better_buff_management/scripts/mods/better_buff_management/utilities/table')
 local BuffBarDefinitions = mod:io_dofile(
-    'better_buff_management/scripts/mods/better_buff_management/hud/hud_element_buff_bar_definitions')
+'better_buff_management/scripts/mods/better_buff_management/hud/hud_element_buff_bar_definitions')
 
--- -------------------------------
--- ------- Local Functions -------
--- -------------------------------
+-- Cache vanilla definitions for the temporary swap trick
+local VanillaDefinitions = require(
+    'scripts/ui/hud/elements/player_buffs/hud_element_player_buffs_definitions'
+)
 
 -- -------------------------------
 -- --------- Constructor ---------
 -- -------------------------------
 local HudElementBuffBar = class('HudElementBuffBar', 'HudElementPlayerBuffs')
 function HudElementBuffBar:init(parent, draw_layer, start_scale, filter)
+    -- The parent class re-requires vanilla definitions internally.
+    -- Temporarily swap the vanilla scenegraph so the engine builds
+    -- the live scenegraph from our values.
+    local orig_scenegraph = VanillaDefinitions.scenegraph_definition
+    local orig_widget_defs = VanillaDefinitions.widget_definitions
+    local orig_buff_def = VanillaDefinitions.buff_widget_definition
+
+    VanillaDefinitions.scenegraph_definition = BuffBarDefinitions.scenegraph_definition
+    VanillaDefinitions.widget_definitions = BuffBarDefinitions.widget_definitions
+    VanillaDefinitions.buff_widget_definition = BuffBarDefinitions.buff_widget_definition
+
     HudElementBuffBar.super.init(self, parent, draw_layer, start_scale, BuffBarDefinitions)
+
+    -- Restore vanilla definitions immediately
+    VanillaDefinitions.scenegraph_definition = orig_scenegraph
+    VanillaDefinitions.widget_definitions = orig_widget_defs
+    VanillaDefinitions.buff_widget_definition = orig_buff_def
+
+    self._definitions = BuffBarDefinitions
     self._filter = filter
 end
 

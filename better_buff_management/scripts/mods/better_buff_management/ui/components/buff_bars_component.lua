@@ -33,7 +33,11 @@ local function _update_buffs(window_id, buffs)
         local buff_window_id = ('%s_%s'):format(window_id, buff_id)
         Imgui.begin_child_window(buff_window_id, UiSettings.BUFF_WINDOW_SIZE[1], UiSettings.BUFF_WINDOW_SIZE[2], false)
 
-        Imgui.image_button(buff.icon, UiSettings.BUFF_IMAGE_SIZE[1], UiSettings.BUFF_IMAGE_SIZE[2], 255, 255, 255, 1)
+        if buff.icon and buff.icon ~= "" then
+            Imgui.image_button(buff.icon, UiSettings.BUFF_IMAGE_SIZE[1], UiSettings.BUFF_IMAGE_SIZE[2], 255, 255, 255, 1)
+        else
+            Imgui.text(buff.name or "???")
+        end
 
         local remove = Imgui.button(mod:localize(REMOVE_BUFF_FROM_BUFF_BAR_LOC_ID))
 
